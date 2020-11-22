@@ -1,0 +1,5 @@
+.main
+    mov bh 8
+    mov bl 6
+    mul bh bl
+    out bh
