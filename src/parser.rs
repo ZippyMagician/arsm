@@ -82,6 +82,7 @@ pub fn lex(program: &str) -> Vec<Node> {
 
 pub fn construct_tree(stream: Vec<Node>) -> Vec<Box<Op>> {
     let mut res = Vec::new();
+    // Note: using a peekable iterator isn't really necessary yet, but it will be once I implement Node::Punctuation
     let mut stream = stream.iter().peekable();
 
     while let Some(tok) = stream.next() {
@@ -112,7 +113,7 @@ pub fn current_tok(stream: &mut std::iter::Peekable<std::slice::Iter<'_, Node>>,
         // TODO: Simple math parser and memory parser
         // Math: eax + 3 * ah
         // Memory: B[ah + 1], W[ah], DW[eax * 3 + 1]
-        Node::Punctuation(_) => Op::Empty,
+        Node::Punctuation(_) => panic!("Punctuation unimplemented"),
 
         Node::Numeric(ref val) => Op::Numeric(val.clone()),
 
@@ -165,7 +166,7 @@ fn run_op(env: &mut Environment, ast: &Vec<Box<Op>>, ind: &mut usize) -> bool {
         Op::Branch(_, body) => {
             for mut ind in 0..body.len() {
                 if run_op(env, &body, &mut ind) {
-                    break;
+                    return true;
                 }
             }
             false
@@ -184,7 +185,7 @@ fn to_numeric(env: &mut Environment, ast: &Vec<Box<Op>>, obj: &Box<Op>) -> i32 {
             let chrs = name.chars().collect::<Vec<char>>();
             if name.ends_with('x') {
                 if name.len() == 3 {
-                    env.registry.read_32(chrs[0], chrs[1]) as i32
+                    env.registry.read_32(chrs[0], chrs[1])
                 } else {
                     env.registry.read_16(chrs[0]) as i32
                 }
