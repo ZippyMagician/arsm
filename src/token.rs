@@ -26,7 +26,7 @@ pub enum Op {
     Label(String),
 
     // TODO: Implement static memory referencing
-    Memory(Box<Op>),
+    Memory(char, Box<Op>),
 
     Register(String),
 

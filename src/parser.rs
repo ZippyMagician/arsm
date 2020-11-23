@@ -1,7 +1,11 @@
+// FIXME: thread 'main' panicked at 'assertion failed: mid <= self.len()'
+
+use std::iter::{Fuse, Peekable};
+
 use clap::ArgMatches;
 
 use crate::token::*;
-// use crate::utils;
+use crate::utils;
 use crate::consts::*;
 use crate::env::Environment;
 use crate::registry::Position;
@@ -63,7 +67,7 @@ pub fn lex(program: &str) -> Vec<Node> {
             res.push(Node::String(buf.clone()[1..buf.len() - 1].to_string()));
             flush(&mut buf, sep[i]);
         } else {
-            if chr.is_whitespace() {
+            if !chr.is_ascii_alphabetic() {
                 if is_register(&buf) {
                     res.push(Node::Register(buf.clone()));
                 } else if buf != "" {
@@ -83,37 +87,61 @@ pub fn lex(program: &str) -> Vec<Node> {
 pub fn construct_tree(stream: Vec<Node>) -> Vec<Box<Op>> {
     let mut res = Vec::new();
     // Note: using a peekable iterator isn't really necessary yet, but it will be once I implement Node::Punctuation
-    let mut stream = stream.iter().peekable();
+    let mut stream = stream.iter().fuse().peekable();
 
     while let Some(tok) = stream.next() {
-        res.push(Box::new(current_tok(&mut stream, tok)));
+        let op = current_tok(&mut stream, tok);
+        if op != Op::Empty {
+            res.push(Box::new(op));
+        }
     }
 
     res
 }
 
-pub fn current_tok(stream: &mut std::iter::Peekable<std::slice::Iter<'_, Node>>, cur: &Node) -> Op {
+pub fn current_tok(stream: &mut Peekable<Fuse<std::slice::Iter<'_, Node>>>, cur: &Node) -> Op {
     match *cur {
         Node::Keyword(ref name) => {
             if let Some(&count) = COMMANDS.get(name) {
                 let mut v = Vec::with_capacity(count);
-                for i in 0..count {
+
+                while v.len() < count {
                     if let Some(n) = stream.next() {
-                        v.push(Box::new(current_tok(stream, n)));
+                        let t = current_tok(stream, n);
+                        if t != Op::Empty {
+                            v.push(Box::new(t));
+                        }
                     } else {
-                        panic!("{} takes {} arguments but {} were provided", name, count, i);
+                        panic!("{} takes {} arguments but {} were provided", name, count, v.len());
                     }
                 }
+                
                 Op::Cmd(name.clone(), v)
             } else {
                 panic!("Unrecognized command: {}", name);
             }
         }
 
-        // TODO: Simple math parser and memory parser
+        // TODO: Simple math parser
         // Math: eax + 3 * ah
         // Memory: B[ah + 1], W[ah], DW[eax * 3 + 1]
-        Node::Punctuation(_) => panic!("Punctuation unimplemented"),
+        Node::Punctuation(ref chr) => {
+            if *chr == '#' || *chr == '$' || *chr == '@' {
+                if let Some(Node::Punctuation('[')) = stream.next() {
+                    let tok = stream.next();
+                    let res = Box::new(current_tok(stream, tok.unwrap_or_else(|| panic!("Invalid termination of a memory identifier: Missing body"))));
+                    if let Some(Node::Punctuation(']')) = stream.next() {
+                        Op::Memory(*chr, res)
+                    } else {
+                        panic!("Invalid termination of a memory identifier: Missing ']'")
+                    }
+                } else {
+                    panic!("Invalid beginning to a memory identifier: Missing '['")
+                }
+            } else {
+                panic!("Math unimplemented");
+            }
+        },
 
         Node::Numeric(ref val) => Op::Numeric(val.clone()),
 
@@ -179,8 +207,17 @@ fn run_op(env: &mut Environment, ast: &Vec<Box<Op>>, ind: &mut usize) -> bool {
 fn to_numeric(env: &mut Environment, ast: &Vec<Box<Op>>, obj: &Box<Op>) -> i32 {
     match *obj.clone() {
         Op::Numeric(val) => val,
-        // TODO: Implement Op::Memory for `to_numeric`
-        Op::Memory(_) => panic!("Memory unimplemented"),
+        Op::Memory(ident, op) => {
+            let val = to_numeric(env, ast, &op) as usize;
+            unsafe {
+                match ident {
+                    '#' => utils::read_from_mem_8(env.mem.as_mut(), val) as i32,
+                    '$' => utils::read_from_mem_16(env.mem.as_mut(), val) as i32,
+                    '@' => utils::read_from_mem_32(env.mem.as_mut(), val),
+                    _ => panic!("Invalid memory identifier: '{}'", ident)
+                }
+            }
+        },
         Op::Register(name) => {
             let chrs = name.chars().collect::<Vec<char>>();
             if name.ends_with('x') {
@@ -235,9 +272,17 @@ fn modify_memory(env: &mut Environment, ast: &Vec<Box<Op>>, obj: &Box<Op>, val: 
                 }
             }
         }
-        Op::Memory(_) => {
-            // TODO: Implement Op::Memory for `modify_memory`
-            panic!("Memory unimplemented");
+        Op::Memory(ident, op) => {
+            let pos = to_numeric(env, &ast, &op) as usize;
+            let val = to_numeric(env, &ast, val);
+            unsafe {
+                match ident {
+                    '#' => utils::write_to_mem_8(env.mem.as_mut(), pos, val as u8),
+                    '$' => utils::write_to_mem_16(env.mem.as_mut(), pos, val as i16),
+                    '@' => utils::write_to_mem_32(env.mem.as_mut(), pos, val),
+                    _ => panic!("Invalid identifier for memory: '{}'", ident)
+                }
+            }
         }
         _ => panic!("Invalid parameter: {:?}", obj),
     }

@@ -23,9 +23,7 @@ pub fn join_slices<'a>(left: &'a [u8], right: &'a [u8]) -> [u8; 4] {
 // Safety: Same safety requirements as std::ptr::write_bytes
 pub unsafe fn write_to_mem_8(mem: &mut [u8], pos: usize, val: u8) {
     mem.rotate_left(pos);
-
     ptr::write_bytes(mem.as_mut_ptr(), val, 1);
-
     mem.rotate_right(pos);
 }
 
@@ -34,19 +32,25 @@ pub unsafe fn write_to_mem_16(mem: &mut [u8], pos: usize, val: i16) {
     let ne_bytes = val.to_ne_bytes();
     let ptr = mem.as_mut_ptr();
     mem.rotate_left(pos);
-
     ptr::write_bytes(ptr, ne_bytes[0], 1);
     mem.rotate_left(1);
     ptr::write_bytes(ptr, ne_bytes[1], 1);
-
     mem.rotate_right(pos + 1);
 }
 
 // Safety: Same safety requirements as std::ptr::write_bytes
 pub unsafe fn write_to_mem_32(mem: &mut [u8], pos: usize, val: i32) {
-    let [a, b, c, d] = val.to_ne_bytes();
-    write_to_mem_16(mem, pos, i16::from_ne_bytes([a, b]));
-    write_to_mem_16(mem, pos + 2, i16::from_ne_bytes([c, d]));
+    let ne_bytes = val.to_ne_bytes();
+    let ptr = mem.as_mut_ptr();
+    mem.rotate_left(pos);
+    ptr::write_bytes(ptr, ne_bytes[0], 1);
+    mem.rotate_left(1);
+    ptr::write_bytes(ptr, ne_bytes[1], 1);
+    mem.rotate_left(1);
+    ptr::write_bytes(ptr, ne_bytes[2], 1);
+    mem.rotate_left(1);
+    ptr::write_bytes(ptr, ne_bytes[3], 1);
+    mem.rotate_right(pos + 3);
 }
 
 // Safety: Same safety requirements as std::ptr::read
@@ -71,8 +75,16 @@ pub unsafe fn read_from_mem_16(mem: &mut [u8], pos: usize) -> i16 {
 
 // Safety: Same safety requirements as std::ptr::read
 pub unsafe fn read_from_mem_32(mem: &mut [u8], pos: usize) -> i32 {
-    let [a, b] = read_from_mem_16(mem, pos).to_ne_bytes();
-    let [c, d] = read_from_mem_16(mem, pos + 2).to_ne_bytes();
+    let ptr = mem.as_mut_ptr();
+    mem.rotate_left(pos);
+    let a = ptr::read(ptr);
+    mem.rotate_left(1);
+    let b = ptr::read(ptr);
+    mem.rotate_left(1);
+    let c = ptr::read(ptr);
+    mem.rotate_left(1);
+    let d = ptr::read(ptr);
+    mem.rotate_right(pos + 3);
 
     i32::from_ne_bytes([a, b, c, d])
 }

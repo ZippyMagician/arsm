@@ -10,7 +10,7 @@ macro_rules! insert_into {
 
 pub const REGISTERS: &[char] = &['a', 'b', 'c', 'd', 'e', 'A', 'B', 'C', 'D', 'E'];
 pub const REGISTER_ENDINGS: &[char] = &['x', 'X', 'h', 'H', 'l', 'L'];
-pub const PUNCTUATION: &[&str] = &["+", "-", "*", "/", "[", "]"];
+pub const PUNCTUATION: &[&str] = &["+", "-", "*", "/", "[", "]", "#", "$", "@"];
 
 lazy_static! {
     pub static ref COMMANDS: HashMap<String, usize> = {

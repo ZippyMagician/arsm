@@ -1,0 +1,9 @@
+.main
+    mov eax 13
+    mov #[eax] 67
+    inc eax
+    mov @[eax] 65536
+    dec eax
+    out #[eax]
+    inc eax
+    out @[eax]
