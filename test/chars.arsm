@@ -1,0 +1,7 @@
+.main
+    out 'a
+    goto :skip
+    out 'b
+.end
+.skip
+    out 'c

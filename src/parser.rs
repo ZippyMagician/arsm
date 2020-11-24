@@ -4,14 +4,14 @@ use std::iter::{Fuse, Peekable};
 
 use clap::ArgMatches;
 
-use crate::token::*;
-use crate::utils;
 use crate::consts::*;
 use crate::env::Environment;
 use crate::registry::Position;
+use crate::token::*;
+use crate::utils;
 
 fn flush(buf: &mut String, chr: char) {
-    *buf = String::new();
+    buf.clear();
     if !chr.is_whitespace() {
         buf.push(chr);
     }
@@ -66,6 +66,9 @@ pub fn lex(program: &str) -> Vec<Node> {
             }
             res.push(Node::String(buf.clone()[1..buf.len() - 1].to_string()));
             flush(&mut buf, sep[i]);
+        } else if buf.starts_with('\'') {
+            res.push(Node::Char(chr));
+            buf.clear();
         } else {
             if !chr.is_ascii_alphabetic() {
                 if is_register(&buf) {
@@ -112,10 +115,15 @@ pub fn current_tok(stream: &mut Peekable<Fuse<std::slice::Iter<'_, Node>>>, cur:
                             v.push(Box::new(t));
                         }
                     } else {
-                        panic!("{} takes {} arguments but {} were provided", name, count, v.len());
+                        panic!(
+                            "{} takes {} arguments but {} were provided",
+                            name,
+                            count,
+                            v.len()
+                        );
                     }
                 }
-                
+
                 Op::Cmd(name.clone(), v)
             } else {
                 panic!("Unrecognized command: {}", name);
@@ -129,7 +137,12 @@ pub fn current_tok(stream: &mut Peekable<Fuse<std::slice::Iter<'_, Node>>>, cur:
             if *chr == '#' || *chr == '$' || *chr == '@' {
                 if let Some(Node::Punctuation('[')) = stream.next() {
                     let tok = stream.next();
-                    let res = Box::new(current_tok(stream, tok.unwrap_or_else(|| panic!("Invalid termination of a memory identifier: Missing body"))));
+                    let res = Box::new(current_tok(
+                        stream,
+                        tok.unwrap_or_else(|| {
+                            panic!("Invalid termination of a memory identifier: Missing body")
+                        }),
+                    ));
                     if let Some(Node::Punctuation(']')) = stream.next() {
                         Op::Memory(*chr, res)
                     } else {
@@ -141,7 +154,7 @@ pub fn current_tok(stream: &mut Peekable<Fuse<std::slice::Iter<'_, Node>>>, cur:
             } else {
                 panic!("Math unimplemented");
             }
-        },
+        }
 
         Node::Numeric(ref val) => Op::Numeric(val.clone()),
 
@@ -165,6 +178,8 @@ pub fn current_tok(stream: &mut Peekable<Fuse<std::slice::Iter<'_, Node>>>, cur:
         }
 
         Node::Register(ref name) => Op::Register(name.clone()),
+
+        Node::Char(ref chr) => Op::Char(*chr),
     }
 }
 
@@ -190,16 +205,20 @@ fn run_op(env: &mut Environment, ast: &Vec<Box<Op>>, ind: &mut usize) -> bool {
         Op::Cmd(name, args) => {
             let shallow_ref: Vec<&Box<Op>> = args.iter().collect();
             run_cmd(env, ast, ind, &*name, &shallow_ref)
-        },
+        }
         Op::Branch(_, body) => {
-            for mut ind in 0..body.len() {
-                if run_op(env, &body, &mut ind) {
+            env.set_parent(&ast);
+            for mut i in 0..body.len() {
+                if run_op(env, &body, &mut i) {
+                    env.clear_parent();
+                    *ind = i;
                     return true;
                 }
             }
+            env.clear_parent();
             false
         }
-        _ => panic!("Unimplemented top-level op: {:?}", ast[*ind]),
+        _ => panic!("Invalid top-level op: {:?}", obj),
     }
 }
 
@@ -214,10 +233,10 @@ fn to_numeric(env: &mut Environment, ast: &Vec<Box<Op>>, obj: &Box<Op>) -> i32 {
                     '#' => utils::read_from_mem_8(env.mem.as_mut(), val) as i32,
                     '$' => utils::read_from_mem_16(env.mem.as_mut(), val) as i32,
                     '@' => utils::read_from_mem_32(env.mem.as_mut(), val),
-                    _ => panic!("Invalid memory identifier: '{}'", ident)
+                    _ => panic!("Invalid memory identifier: '{}'", ident),
                 }
             }
-        },
+        }
         Op::Register(name) => {
             let chrs = name.chars().collect::<Vec<char>>();
             if name.ends_with('x') {
@@ -234,20 +253,22 @@ fn to_numeric(env: &mut Environment, ast: &Vec<Box<Op>>, obj: &Box<Op>) -> i32 {
                 }
             }
         }
-        Op::Label(name) => {
-            let moved: Vec<Op> = ast.iter().map(|x| *x.clone()).collect();
-            moved
-                .iter()
-                .position(|entry| {
-                    if let Op::Branch(n, _) = entry {
-                        n[1..] == name[1..]
-                    } else {
-                        false
-                    }
-                })
-                .unwrap() as i32
-        }
+        Op::Label(name) => env
+            .get_parent()
+            .clone()
+            .unwrap_or(ast.clone())
+            .iter()
+            .map(|x| *x.clone())
+            .position(|entry| {
+                if let Op::Branch(n, _) = entry {
+                    n[1..] == name[1..]
+                } else {
+                    false
+                }
+            })
+            .unwrap() as i32,
         Op::BinOp(_, _, _) => panic!("Math unimplemented"),
+        Op::Char(chr) => chr as u8 as i32,
         _ => panic!("Invalid numeric literal: {:?}", obj),
     }
 }
@@ -280,7 +301,7 @@ fn modify_memory(env: &mut Environment, ast: &Vec<Box<Op>>, obj: &Box<Op>, val: 
                     '#' => utils::write_to_mem_8(env.mem.as_mut(), pos, val as u8),
                     '$' => utils::write_to_mem_16(env.mem.as_mut(), pos, val as i16),
                     '@' => utils::write_to_mem_32(env.mem.as_mut(), pos, val),
-                    _ => panic!("Invalid identifier for memory: '{}'", ident)
+                    _ => panic!("Invalid identifier for memory: '{}'", ident),
                 }
             }
         }
@@ -329,12 +350,7 @@ fn run_cmd(
             let left = to_numeric(env, ast, args[0]);
             let right = to_numeric(env, ast, args[1]);
 
-            modify_memory(
-                env,
-                ast,
-                args[0],
-                &Box::new(Op::Numeric(left * right)),
-            );
+            modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left * right)));
             false
         }
         "div" => {
@@ -342,12 +358,7 @@ fn run_cmd(
             let left = to_numeric(env, ast, args[0]);
             let right = to_numeric(env, ast, args[1]);
 
-            modify_memory(
-                env,
-                ast,
-                args[0],
-                &Box::new(Op::Numeric(left / right)),
-            );
+            modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left / right)));
             false
         }
         "sub" => {
@@ -355,12 +366,7 @@ fn run_cmd(
             let left = to_numeric(env, ast, args[0]);
             let right = to_numeric(env, ast, args[1]);
 
-            modify_memory(
-                env,
-                ast,
-                args[0],
-                &Box::new(Op::Numeric(left - right)),
-            );
+            modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left - right)));
             false
         }
         "add" => {
@@ -368,12 +374,7 @@ fn run_cmd(
             let left = to_numeric(env, ast, args[0]);
             let right = to_numeric(env, ast, args[1]);
 
-            modify_memory(
-                env,
-                ast,
-                args[0],
-                &Box::new(Op::Numeric(left + right)),
-            );
+            modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left + right)));
             false
         }
         _ => panic!("Command: {} unrecognized", cmd),

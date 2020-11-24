@@ -11,6 +11,8 @@ pub enum Node {
     Register(String),
 
     Punctuation(char),
+
+    Char(char),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -33,6 +35,8 @@ pub enum Op {
     Numeric(i32),
 
     String(String),
+
+    Char(char),
 
     Empty,
 }
