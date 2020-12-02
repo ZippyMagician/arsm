@@ -8,28 +8,28 @@ Mostly designed for fun, this flavour of Assembly was made for Rust specifically
 Proof of concepts, some of these need to be implemented
 ### Hello, World!
 ```asm
-str "Hello, World!" 0
+str "Hello, World!" 10
 
 .loop
-  chr [ex]
-  inc [ex]
-  jmp db 0 ex :skip
+  chr [eh]
+  inc eh
+  jmp db 0 10 eh :skip
   gto :loop
 .skip
 ```
 ### Cat
 ```asm
 .loop
-  mov eax in
-  jmp eax 3 :skip
-  chr eax
+  mov eh in
+  jmp eh 3 :skip
+  chr eh
   gto :loop
 .skip
 ```
 ### Truth Machine
 ```asm
-mov ex in
-jmp ex 1 :loop
+mov eh in
+jmp eh 49 :loop
 gto :skip
 .loop
   out 1
