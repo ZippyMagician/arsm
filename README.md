@@ -13,27 +13,27 @@ str "Hello, World!" 10
 .loop
   chr [eh]
   inc eh
-  jmp db 0 10 eh :skip
-  gto :loop
+  je db 0 10 eh :skip
+  jmp :loop
 .skip
 ```
 ### Cat
 ```asm
 .loop
   mov eh in
-  jmp eh 3 :skip
+  je eh 3 :skip
   chr eh
-  gto :loop
+  jmp :loop
 .skip
 ```
 ### Truth Machine
 ```asm
 mov eh in
-jmp eh 49 :loop
-gto :skip
+je eh 49 :loop
+jmp :skip
 .loop
   out 1
-  gto :loop
+  jmp :loop
 .skip
   out 0
 ```
