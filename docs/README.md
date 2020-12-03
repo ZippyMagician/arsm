@@ -12,7 +12,7 @@ Branches can be jumped to by certain commands. They are defined as follows:
 ```
 .name
     ...
-.end
+.
 ```
 A branch will be executed on the programs first run-through. For example:
 ```
@@ -32,8 +32,13 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `inc <A>` -> Increment A
 * `dec <A>` -> Decrement A
 * `out <A>` -> Print A with no newline
-* `goto <A>` -> Goto the branch entitled A (note: A is a **label**, not a **branch**)
+* `jmp <A>` -> Goto the branch entitled A (note: A is a **label**, not a **branch**)
+* `je <A> <B> <C>` -> Goto branch C if A == B
 * `mul <A> <B>` -> Multiply A by B, store in A
 * `div <A> <B>` -> Divide A by B, store in A
 * `add <A> <B>` -> Add A and B, store in A
 * `sub <A> <B>` -> Subtract B from A, store in A
+* `str <A> <B>` -> Place string A in memory, with final character B
+* `db <A> <B>` -> Get length of data, starting at point A in memory and ending when the point in memory equals B
+* `in` -> Get next byte of STDIN or a null-byte (`0`) if none left
+* `chr <A>` -> Print A as a character instead of number
