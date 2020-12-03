@@ -5,7 +5,7 @@ A toy version of Assembly, implemented in Rust.
 Mostly designed for fun, this flavour of Assembly was made for Rust specifically. See `/docs` for more a guide for using the language.
 
 ## Example Programs
-Proof of concepts, some of these need to be implemented
+Some simple programs written in arsm
 ### Hello, World!
 ```asm
 str "Hello, World!" 10
@@ -15,7 +15,7 @@ str "Hello, World!" 10
   inc eh
   je db 0 10 eh :skip
   jmp :loop
-.skip
+..skip
 ```
 ### Cat
 ```asm
@@ -24,16 +24,17 @@ str "Hello, World!" 10
   je eh 3 :skip
   chr eh
   jmp :loop
-.skip
+..skip
 ```
 ### Truth Machine
 ```asm
 mov eh in
 je eh 49 :loop
 jmp :skip
+
 .loop
   out 1
   jmp :loop
-.skip
+..skip
   out 0
 ```

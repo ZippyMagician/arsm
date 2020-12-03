@@ -90,7 +90,7 @@ pub unsafe fn read_from_mem_32(mem: &mut [u8], pos: usize) -> i32 {
 }
 
 // Read file and return the result
-pub fn read_file<'b>(path: &'_ str) -> std::io::Result<String> {
+pub fn read_file(path: &'_ str) -> std::io::Result<String> {
     fs::read_to_string(path)
 }
 

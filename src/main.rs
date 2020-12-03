@@ -7,6 +7,7 @@ mod consts;
 mod env;
 mod parser;
 mod registry;
+mod status;
 mod token;
 mod utils;
 
@@ -16,6 +17,7 @@ fn main() {
         (author: "Joshua B. <zippymagician1@gmail.com>")
         (about: "A shitty assembly flavor written in rust")
         (@arg INPUT: +required "The input file to be run")
+        (@arg STDIN: "The program's input")
         (@arg debug: -d --debug "Use this flag to enable some debug features")
     )
     .get_matches();

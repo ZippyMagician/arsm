@@ -20,12 +20,16 @@ lazy_static! {
             "inc" 1;
             "dec" 1;
             "out" 1;
-            "jmp" 3;
-            "goto" 1;
+            "jmp" 1;
+            "je" 3;
             "mul" 2;
             "div" 2;
             "add" 2;
-            "sub" 2
+            "sub" 2;
+            "str" 2;
+            "db" 2;
+            "in" 0;
+            "chr" 1
         );
         m
     };

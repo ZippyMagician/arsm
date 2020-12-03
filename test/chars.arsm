@@ -1,7 +1,6 @@
 .main
-    out 'a
-    goto :skip
-    out 'b
-.end
-.skip
-    out 'c
+    chr 'a
+    jmp :skip
+    chr 'b
+..skip
+    chr 'c

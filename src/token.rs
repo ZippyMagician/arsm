@@ -21,13 +21,12 @@ pub enum Op {
     // TODO: Implement binary operators
     BinOp(char, Box<Op>, Box<Op>),
 
-    Cmd(String, Vec<Box<Op>>),
+    Cmd(String, Vec<Op>),
 
-    Branch(String, Vec<Box<Op>>),
+    Branch(String, Vec<Op>),
 
     Label(String),
 
-    // TODO: Implement static memory referencing
     Memory(char, Box<Op>),
 
     Register(String),

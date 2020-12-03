@@ -9,7 +9,9 @@ pub struct Environment {
 
     pub registry: Register,
 
-    parent_ast: Option<Vec<Box<Op>>>,
+    pub stdin: Vec<char>,
+
+    parent_ast: Option<Vec<Op>>,
 }
 
 impl Environment {
@@ -17,15 +19,16 @@ impl Environment {
         Self {
             mem: [0u8; 1024],
             registry: Register::init(),
+            stdin: Vec::new(),
             parent_ast: None,
         }
     }
 
-    pub fn set_parent(&mut self, ast: &Vec<Box<Op>>) {
-        self.parent_ast = Some(ast.clone());
+    pub fn set_parent(&mut self, ast: &[Op]) {
+        self.parent_ast = Some(ast.to_owned());
     }
 
-    pub fn get_parent(&self) -> &Option<Vec<Box<Op>>> {
+    pub fn get_parent(&self) -> &Option<Vec<Op>> {
         &self.parent_ast
     }
 
