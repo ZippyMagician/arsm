@@ -5,9 +5,9 @@ A toy version of Assembly, implemented in Rust.
 Mostly designed for fun, this flavour of Assembly was made for Rust specifically. See `/docs` for more a guide for using the language.
 
 ## Installation
-To build from source, first clone this repository into a local directory. Next, run `cargo install --path path/to/repository` or run `make` in the repository's directory
+To build from source, first clone this repository into a local directory. Next, run `make` in the repository's directory
 
-Please make sure you have [Rust](https://rust-lang.org) installed on your system before running this command. Once installed, you can use arsm through the cli.
+Please make sure you have [Rust](https://rust-lang.org) installed on your system before running this command. Once installed, you can use the above command and then proceed to use arsm through the cli.
 ## Testing
 Use the command `make tests` to test every case in `./test_cases`. A new case called `N` can be created by:
  1. Creating `N.arsm`, which is the program
@@ -21,7 +21,7 @@ Some simple programs written in arsm
 str "Hello, World!" 10
 
 .loop
-  chr [eh]
+  chr #[eh]
   inc eh
   je db 0 10 eh :skip
   jmp :loop
