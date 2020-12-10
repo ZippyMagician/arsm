@@ -18,6 +18,7 @@ fn main() {
         (about: "A shitty assembly flavor written in rust")
         (@arg INPUT: +required "The input file to be run")
         (@arg STDIN: "The program's input")
+        (@arg stdin_file: --stdin +takes_value "The program's input, through a file")
         (@arg debug: -d --debug "Use this flag to enable some debug features")
     )
     .get_matches();
