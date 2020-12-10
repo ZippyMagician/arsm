@@ -1,9 +1,12 @@
-# Runs test cases
+# Simple Makefile to build ARSM or run the test cases
 
 TESTS = ./test_cases
 
-.PHONY: tests list
-.DEFAULT: tests
+.PHONY: tests list main
+.DEFAULT: main
+
+main:
+	cargo install --path .
 
 tests: list
 
