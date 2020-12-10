@@ -10,6 +10,11 @@ To build from source, first clone this repository into a local directory. Next, 
 cargo install --path path/to/repository
 ```
 Please make sure you have [Rust](https://rust-lang.org) installed on your system before running this command. Once installed, you can use arsm through the cli.
+## Testing
+Use the command `make` or `make tests` to test every case in `./test_cases`. A new case called `N` can be created by:
+ 1. Creating `N.arsm`, which is the program
+ 2. Creating `N.in`, which is the input for the program
+ 3. Creating `N.out`, which is the output the program should return
 
 ## Example Programs
 Some simple programs written in arsm
