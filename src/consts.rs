@@ -22,6 +22,7 @@ lazy_static! {
             "out" 1;
             "jmp" 1;
             "je" 3;
+            "jne" 3;
             "mul" 2;
             "div" 2;
             "add" 2;

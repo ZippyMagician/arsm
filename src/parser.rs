@@ -412,6 +412,18 @@ fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: 
             .into()
         }
 
+        "jne" => {
+            let left = to_numeric(env, ast, args[0]);
+            let right = to_numeric(env, ast, args[1]);
+            if left != right {
+                *ind = to_numeric(env, ast, args[2]) as usize;
+                true
+            } else {
+                false
+            }
+            .into()
+        }
+
         "str" => match args[0] {
             Op::String(val) => {
                 for (i, chr) in val.chars().enumerate() {
@@ -427,7 +439,7 @@ fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: 
             }
 
             _ => panic!("Argument #0 for command 'str' must be of type Op::String"),
-        },
+        }
 
         "db" => {
             let mut i = to_numeric(env, ast, args[0]) as usize;
@@ -447,7 +459,7 @@ fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: 
             }
 
             None => 0.into(),
-        },
+        }
 
         _ => panic!("Command: {} unrecognized", cmd),
     }
