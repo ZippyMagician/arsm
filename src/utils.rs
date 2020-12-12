@@ -20,11 +20,14 @@ pub fn join_slices<'a>(left: &'a [u8], right: &'a [u8]) -> [u8; 4] {
     [left[0], left[1], right[0], right[1]]
 }
 
-unsafe fn write(mem: &mut [u8], pos: usize, val: u8) {
+unsafe fn write(mem: &mut [u8], pos: usize, vals: &[u8]) {
     let len = mem.len();
     let p = mem.as_mut_ptr().add(pos);
-    ptr::copy(p, p.offset(1), len - pos);
-    ptr::write(p, val);
+
+    for val in vals {
+        ptr::copy(p, p.offset(1), len - pos);
+        ptr::write(p, *val);
+    }
 }
 
 unsafe fn read(mem: &mut [u8], pos: usize) -> u8 {
@@ -33,23 +36,19 @@ unsafe fn read(mem: &mut [u8], pos: usize) -> u8 {
 
 // Safety: Same safety requirements as std::ptr::write_bytes
 pub unsafe fn write_to_mem_8(mem: &mut [u8], pos: usize, val: u8) {
-    write(mem, pos, val);
+    write(mem, pos, &[val]);
 }
 
 // Safety: Same safety requirements as std::ptr::write_bytes
 pub unsafe fn write_to_mem_16(mem: &mut [u8], pos: usize, val: i16) {
     let ne_bytes = val.to_ne_bytes();
-    write(mem, pos, ne_bytes[0]);
-    write(mem, pos, ne_bytes[1]);
+    write(mem, pos, &ne_bytes);
 }
 
 // Safety: Same safety requirements as std::ptr::write_bytes
 pub unsafe fn write_to_mem_32(mem: &mut [u8], pos: usize, val: i32) {
     let ne_bytes = val.to_ne_bytes();
-    write(mem, pos, ne_bytes[0]);
-    write(mem, pos, ne_bytes[1]);
-    write(mem, pos, ne_bytes[2]);
-    write(mem, pos, ne_bytes[3]);
+    write(mem, pos, &ne_bytes);
 }
 
 // Safety: Same safety requirements as std::ptr::read
