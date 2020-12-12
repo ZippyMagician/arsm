@@ -9,7 +9,7 @@ To build from source, first clone this repository into a local directory. Next, 
 
 Please make sure you have [Rust](https://rust-lang.org) installed on your system before running this command. Once installed, you can use the above command and then proceed to use arsm through the cli.
 ## Testing
-Use the command `node test.js` to test every case in `./test_cases`. A new case called `N` can be created by:
+Use the command `node test` to test every case in `./test_cases`. A new case called `N` can be created by:
  1. Creating `N.arsm`, which is the program
  2. Creating `N.in`, which is the input for the program
  3. Creating `N.out`, which is the output the program should return

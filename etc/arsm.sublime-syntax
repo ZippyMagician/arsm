@@ -1,0 +1,77 @@
+%YAML 1.2
+---
+# Simple syntax file for ARSM in Sublime Text 3
+name: arsm
+file_extensions: [asm, arsm]
+scope: source.arsm
+
+contexts:
+  prototype:
+    - include: comments
+
+  main:
+    - include: branches
+    - include: args
+    - include: keywords
+
+  args:
+    - include: labels
+    - include: registers
+    - include: numbers
+    - include: strings
+    - include: chars
+    - include: memory
+
+  branches:
+    - match: '\.+[a-zA-Z]+'
+      scope: variable.language.arsm
+
+  keywords:
+    - match: '[a-zA-Z]+'
+      scope: keyword.control.arsm
+
+  labels:
+    - match: ':[a-zA-Z]+'
+      scope: variable.language.arsm
+
+  registers:
+    - match: '[abcde]{1, 2}x\b'
+      scope: variable.parameter.arsm
+    - match: '[abcde]h\b'
+      scope: variable.parameter.arsm
+
+  numbers:
+    - match: '\b(-)?[0-9.]+\b'
+      scope: constant.numeric.arsm
+
+  strings:
+    - match: '"'
+      scope: punctuation.definition.string.begin.arsm
+      push: inside_string
+
+  chars:
+    - match: \'.
+      scope: punctuation.definition.string.arsm
+
+  memory:
+    - match: '[#@$]\['
+      scope: punctuation.section.block.begin.arsm
+    - match: '\]'
+      scope: punctuation.section.block.end.arsm
+
+  inside_string:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.arsm
+    - match: '\.'
+      scope: constant.character.escape.arsm
+    - match: '"'
+      scope: punctuation.definition.string.end.arsm
+      pop: true
+
+  comments:
+    - match: ';'
+      scope: punctuation.definition.comment.arsm
+      push:
+        - meta_scope: comment.line.double-slash.arsm
+        - match: $\n?
+          pop: true
