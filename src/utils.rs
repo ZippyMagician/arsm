@@ -20,16 +20,20 @@ pub fn join_slices<'a>(left: &'a [u8], right: &'a [u8]) -> [u8; 4] {
     [left[0], left[1], right[0], right[1]]
 }
 
+// Unchecked write (assumes inside index)
 unsafe fn write(mem: &mut [u8], pos: usize, vals: &[u8]) {
+    let mut p = mem.as_mut_ptr().add(pos);
     let len = mem.len();
-    let p = mem.as_mut_ptr().add(pos);
 
     for val in vals {
-        ptr::copy(p, p.offset(1), len - pos);
+        ptr::copy(p, p, len - pos);
         ptr::write(p, *val);
+        p = p.offset(1);
     }
 }
 
+// Unchecked read (assumes inside index)
+#[inline]
 unsafe fn read(mem: &mut [u8], pos: usize) -> u8 {
     ptr::read(mem.as_ptr().add(pos))
 }
