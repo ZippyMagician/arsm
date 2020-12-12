@@ -5,7 +5,7 @@ A toy version of Assembly, implemented in Rust.
 Mostly designed for fun, this flavour of Assembly was made for Rust specifically. See `/docs` for more a guide for using the language.
 
 ## Installation
-To build from source, first clone this repository into a local directory. Next, run `make` in the repository's directory
+To build from source, first clone this repository into a local directory. Next, run `cargo install --path path/to/repository`.
 
 Please make sure you have [Rust](https://rust-lang.org) installed on your system before running this command. Once installed, you can use the above command and then proceed to use arsm through the cli.
 ## Testing
