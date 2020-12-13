@@ -207,7 +207,7 @@ pub fn parse(ast: Vec<Op>, matches: ArgMatches) {
 
 // Returns true if the index was manually updated
 fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status> {
-    match ast[*ind].clone() {
+    match &ast[*ind] {
         Op::Cmd(name, args) => {
             let shallow_ref: Vec<&Op> = args.iter().collect();
             run_cmd(env, ast, ind, &*name, &shallow_ref)
@@ -327,7 +327,13 @@ fn modify_memory(env: &mut Environment, ast: &[Op], obj: &Op, val: &Op) {
 }
 
 // Returns `true` if `ind` was modified, `false` otherwise
-fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: &[&Op]) -> Box<dyn Status> {
+fn run_cmd(
+    env: &mut Environment,
+    ast: &[Op],
+    ind: &mut usize,
+    cmd: &str,
+    args: &[&Op],
+) -> Box<dyn Status> {
     match cmd {
         "mov" => {
             // Move second value into the first
