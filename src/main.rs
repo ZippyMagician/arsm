@@ -5,6 +5,7 @@ extern crate lazy_static;
 
 mod consts;
 mod env;
+mod iter;
 mod parser;
 mod registry;
 mod status;

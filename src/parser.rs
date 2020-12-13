@@ -184,14 +184,15 @@ pub fn current_tok(stream: &mut Peekable<std::slice::Iter<'_, Node>>, cur: &Node
 }
 
 pub fn parse(ast: Vec<Op>, matches: ArgMatches) {
-    let mut env = Environment::new();
-    env.stdin = match matches.value_of("stdin_file") {
-        Some(path) => utils::read_file(path).unwrap_or_else(|_| String::from("")),
+    let mut env = Environment::new(match matches.value_of("stdin_file") {
+        Some(path) => std::fs::read(path).unwrap_or_default(),
 
-        None => String::from(matches.value_of("STDIN").unwrap_or("")),
-    }
-    .chars()
-    .collect();
+        None => matches
+            .value_of("STDIN")
+            .unwrap_or_default()
+            .as_bytes()
+            .into(),
+    });
     let mut ind = 0;
 
     while ind < ast.len() {
@@ -456,12 +457,8 @@ fn run_cmd(
             Box::new(len)
         }
 
-        "in" => Box::new(match env.stdin.clone().get(0) {
-            Some(val) => {
-                env.stdin = env.stdin[1..].into();
-                *val as u8 as i32
-            }
-
+        "in" => Box::new(match env.stdin.next() {
+            Some(val) => val as i32,
             None => 0,
         }),
 

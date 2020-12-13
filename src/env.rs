@@ -1,3 +1,4 @@
+use crate::iter::BufIter;
 use crate::registry::Register;
 use crate::token::Op;
 
@@ -9,17 +10,17 @@ pub struct Environment {
 
     pub registry: Register,
 
-    pub stdin: Vec<char>,
+    pub stdin: BufIter,
 
     parent_ast: Option<Vec<Op>>,
 }
 
 impl Environment {
-    pub fn new() -> Self {
+    pub fn new(buf: Vec<u8>) -> Self {
         Self {
             mem: [0u8; 1024],
             registry: Register::init(),
-            stdin: Vec::new(),
+            stdin: BufIter::new(buf),
             parent_ast: None,
         }
     }
