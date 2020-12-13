@@ -267,7 +267,6 @@ fn to_numeric(env: &mut Environment, ast: &[Op], obj: &Op) -> i32 {
             .clone()
             .unwrap_or_else(|| ast.to_owned())
             .iter()
-            .cloned()
             .position(|entry| {
                 if let Op::Branch(n, _) = entry {
                     n[1..] == name[1..]
