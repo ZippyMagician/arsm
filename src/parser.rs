@@ -20,7 +20,7 @@ fn is_num(test: &str) -> bool {
     test.parse::<i32>().is_ok()
 }
 
-fn is_register(test: &String) -> bool {
+fn is_register(test: &str) -> bool {
     test.ends_with(|chr| REGISTER_ENDINGS.contains(&chr))
         && test[..test.len() - 1]
             .chars()
@@ -186,7 +186,7 @@ pub fn current_tok(stream: &mut Peekable<std::slice::Iter<'_, Node>>, cur: &Node
 pub fn parse(ast: Vec<Op>, matches: ArgMatches) {
     let mut env = Environment::new();
     env.stdin = match matches.value_of("stdin_file") {
-        Some(path) => utils::read_file(path).unwrap_or(String::from("")),
+        Some(path) => utils::read_file(path).unwrap_or_else(|_| String::from("")),
 
         None => String::from(matches.value_of("STDIN").unwrap_or("")),
     }
@@ -267,7 +267,7 @@ fn to_numeric(env: &mut Environment, ast: &[Op], obj: &Op) -> i32 {
             .clone()
             .unwrap_or_else(|| ast.to_owned())
             .iter()
-            .map(|x| x.clone())
+            .cloned()
             .position(|entry| {
                 if let Op::Branch(n, _) = entry {
                     n[1..] == name[1..]
