@@ -2,7 +2,7 @@
 A toy version of Assembly, implemented in Rust.
 
 ## About
-Mostly designed for fun, this flavour of Assembly was made for Rust specifically. See `/docs` for more a guide for using the language.
+Mostly designed for fun, this flavour of Assembly was made for Rust specifically. See `/etc/DOCS.md` for a guide to use the language.
 
 ## Installation
 To build from source, first clone this repository into a local directory. Next, run `cargo install --path path/to/repository`.

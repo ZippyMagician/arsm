@@ -90,6 +90,7 @@ mod mem_tests {
         let mem_slice = mem.as_mut_slice();
 
         unsafe {
+            write_to_mem_8(mem_slice, 15, 3);
             write_to_mem_8(mem_slice, 0, 56);
             write_to_mem_16(mem_slice, 2, 467);
             write_to_mem_32(mem_slice, 5, 567_735);
@@ -98,6 +99,7 @@ mod mem_tests {
             assert_eq!(read_from_mem_8(mem_slice, 0), 56);
             assert_eq!(read_from_mem_16(mem_slice, 2), 467);
             assert_eq!(read_from_mem_8(mem_slice, 4), 0);
+            assert_eq!(read_from_mem_8(mem_slice, 15), 3);
         }
     }
 }
