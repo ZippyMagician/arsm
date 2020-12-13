@@ -206,7 +206,7 @@ pub fn parse(ast: Vec<Op>, matches: ArgMatches) {
 }
 
 // Returns true if the index was manually updated
-fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Status {
+fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status> {
     match ast[*ind].clone() {
         Op::Cmd(name, args) => {
             let shallow_ref: Vec<&Op> = args.iter().collect();
@@ -219,12 +219,13 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Status {
                 if run_op(env, &body, &mut i).has_jmp() {
                     env.clear_parent();
                     *ind = i;
-                    return true.into();
+                    return Box::new(true);
                 }
             }
             env.clear_parent();
-            false.into()
+            Box::new(false)
         }
+
         _ => panic!("Invalid top-level op: {:?}", ast[*ind]),
     }
 }
@@ -326,42 +327,42 @@ fn modify_memory(env: &mut Environment, ast: &[Op], obj: &Op, val: &Op) {
 }
 
 // Returns `true` if `ind` was modified, `false` otherwise
-fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: &[&Op]) -> Status {
+fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: &[&Op]) -> Box<dyn Status> {
     match cmd {
         "mov" => {
             // Move second value into the first
             modify_memory(env, ast, args[0], args[1]);
-            false.into()
+            Box::new(false)
         }
 
         "inc" => {
             // new_val is 1 more than the previous value
             let new_val = Box::new(Op::Numeric(1 + to_numeric(env, ast, args[0])));
             modify_memory(env, ast, args[0], &new_val);
-            false.into()
+            Box::new(false)
         }
 
         "dec" => {
             // new_val is 1 less than the previous value
             let new_val = Box::new(Op::Numeric(to_numeric(env, ast, args[0]) - 1));
             modify_memory(env, ast, args[0], &new_val);
-            false.into()
+            Box::new(false)
         }
 
         "out" => {
             print!("{}", to_numeric(env, ast, args[0]));
-            false.into()
+            Box::new(false)
         }
 
         "chr" => {
             print!("{}", to_numeric(env, ast, args[0]) as u8 as char);
-            false.into()
+            Box::new(false)
         }
 
         "jmp" => {
             let i = to_numeric(env, ast, args[0]);
             *ind = i as usize;
-            true.into()
+            Box::new(true)
         }
 
         "mul" => {
@@ -370,7 +371,7 @@ fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: 
             let right = to_numeric(env, ast, args[1]);
 
             modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left * right)));
-            false.into()
+            Box::new(false)
         }
 
         "div" => {
@@ -379,7 +380,7 @@ fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: 
             let right = to_numeric(env, ast, args[1]);
 
             modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left / right)));
-            false.into()
+            Box::new(false)
         }
 
         "sub" => {
@@ -388,7 +389,7 @@ fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: 
             let right = to_numeric(env, ast, args[1]);
 
             modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left - right)));
-            false.into()
+            Box::new(false)
         }
 
         "add" => {
@@ -397,31 +398,29 @@ fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: 
             let right = to_numeric(env, ast, args[1]);
 
             modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left + right)));
-            false.into()
+            Box::new(false)
         }
 
         "je" => {
             let left = to_numeric(env, ast, args[0]);
             let right = to_numeric(env, ast, args[1]);
-            if left == right {
+            Box::new(if left == right {
                 *ind = to_numeric(env, ast, args[2]) as usize;
                 true
             } else {
                 false
-            }
-            .into()
+            })
         }
 
         "jne" => {
             let left = to_numeric(env, ast, args[0]);
             let right = to_numeric(env, ast, args[1]);
-            if left != right {
+            Box::new(if left != right {
                 *ind = to_numeric(env, ast, args[2]) as usize;
                 true
             } else {
                 false
-            }
-            .into()
+            })
         }
 
         "str" => match args[0] {
@@ -435,11 +434,11 @@ fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: 
                 unsafe {
                     utils::write_to_mem_8(env.mem.as_mut(), val.len(), terminator);
                 }
-                false.into()
+                Box::new(false)
             }
 
             _ => panic!("Argument #0 for command 'str' must be of type Op::String"),
-        }
+        },
 
         "db" => {
             let mut i = to_numeric(env, ast, args[0]) as usize;
@@ -449,17 +448,17 @@ fn run_cmd(env: &mut Environment, ast: &[Op], ind: &mut usize, cmd: &str, args: 
                 len += 1;
                 i += 1;
             }
-            len.into()
+            Box::new(len)
         }
 
-        "in" => match env.stdin.clone().get(0) {
+        "in" => Box::new(match env.stdin.clone().get(0) {
             Some(val) => {
                 env.stdin = env.stdin[1..].into();
-                (*val as u8 as i32).into()
+                *val as u8 as i32
             }
 
-            None => 0.into(),
-        }
+            None => 0,
+        }),
 
         _ => panic!("Command: {} unrecognized", cmd),
     }

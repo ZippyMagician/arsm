@@ -67,7 +67,12 @@ pub unsafe fn read_from_mem_16(mem: &mut [u8], pos: usize) -> i16 {
 
 // Safety: Same safety requirements as std::ptr::read
 pub unsafe fn read_from_mem_32(mem: &mut [u8], pos: usize) -> i32 {
-    i32::from_ne_bytes([read(mem, pos), read(mem, pos + 1), read(mem, pos + 2), read(mem, pos + 3)])
+    i32::from_ne_bytes([
+        read(mem, pos),
+        read(mem, pos + 1),
+        read(mem, pos + 2),
+        read(mem, pos + 3),
+    ])
 }
 
 // Read file and return the result

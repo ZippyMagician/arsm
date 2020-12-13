@@ -1,44 +1,35 @@
-use std::convert::Into;
+pub trait Status {
+    fn has_jmp(&self) -> bool;
 
-pub struct Status {
-    jmp: Option<bool>,
-
-    bal: Option<i32>,
+    fn get_val(&self) -> i32;
 }
 
-impl Status {
-    pub fn has_jmp(&self) -> bool {
-        self.jmp.unwrap_or(false)
+impl Status for bool {
+    fn has_jmp(&self) -> bool {
+        *self
     }
 
-    pub fn get_val(&self) -> i32 {
-        self.bal.unwrap_or(0)
+    fn get_val(&self) -> i32 {
+        0
     }
 }
 
-impl Into<Status> for bool {
-    fn into(self) -> Status {
-        Status {
-            jmp: Some(self),
-            bal: None,
-        }
+impl Status for i32 {
+    fn has_jmp(&self) -> bool {
+        false
+    }
+
+    fn get_val(&self) -> i32 {
+        *self
     }
 }
 
-impl Into<Status> for i32 {
-    fn into(self) -> Status {
-        Status {
-            jmp: None,
-            bal: Some(self),
-        }
+impl Status for (bool, i32) {
+    fn has_jmp(&self) -> bool {
+        self.0
     }
-}
 
-impl Into<Status> for (bool, i32) {
-    fn into(self) -> Status {
-        Status {
-            jmp: Some(self.0),
-            bal: Some(self.1),
-        }
+    fn get_val(&self) -> i32 {
+        self.1
     }
 }
