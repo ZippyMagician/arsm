@@ -10,13 +10,13 @@ pub struct Environment {
 
     pub registry: Register,
 
-    pub stdin: BufIter,
+    pub stdin: BufIter<u8>,
 
     parent_ast: Option<Vec<Op>>,
 }
 
 impl Environment {
-    pub fn new(buf: Vec<u8>) -> Self {
+    pub fn new(buf: &mut [u8]) -> Self {
         Self {
             mem: [0u8; 1024],
             registry: Register::init(),

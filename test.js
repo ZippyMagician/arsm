@@ -17,9 +17,8 @@ for (file of files) {
 
 exec(`cargo -q test`, (_, out, err) => {
     console.log("Crate tests:");
-    console.log(`${out}`);
-
-    console.log("User tests:");
+    console.log(`${out}User tests:`);
+    
     for (let c in map) {
         c = map[c];
         exec(`cargo -q run ${c[0]} --stdin ${c[1]}`,  (_, stdout) => {

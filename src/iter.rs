@@ -6,36 +6,41 @@ use std::ptr;
 // This fixes that, as it explicitly allocates the data onto the heap
 // It is also rather fast, making use of std::ptr
 #[derive(Debug, PartialEq)]
-pub struct BufIter {
-    inside: Box<[u8]>,
-    c: usize,
+pub struct BufIter<T> {
+    ptr: *mut T,
+    // Has to be *mut T and not *const T so they can be compared
+    end: *const T,
 }
 
-impl BufIter {
-    pub fn new(body: Vec<u8>) -> Self {
-        Self {
-            inside: body.into_boxed_slice(),
-            c: 0,
+impl<T> BufIter<T> {
+    pub fn new(body: &mut [T]) -> Self {
+        assert_ne!(std::mem::size_of::<T>(), 0);
+        assert!(body.len() <= std::isize::MAX as usize);
+        // Safety: Previous conditions ensure this will work and not result in UB
+        unsafe {
+            let ptr = body.as_mut_ptr();
+            Self {
+                ptr,
+                end: ptr.add(body.len()),
+            }
         }
     }
 }
 
-impl Iterator for BufIter {
-    type Item = u8;
+impl<T> Iterator for BufIter<T> {
+    type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.c == self.inside.len() {
+        // Safety: meets all requirements of pointer::offset_from, therefore safe
+        if unsafe { self.ptr.offset_from(self.end) } == 0 {
             None
         } else {
-            let p = self.inside.as_mut_ptr();
-            let e;
+            let old = self.ptr;
+            // Safety: Wrapping code ensures this cannot overflow or read a null pointer
             unsafe {
-                e = ptr::read(p);
-                ptr::copy(p.offset(1), p, self.inside.len() - 1);
-                self.c += 1;
+                self.ptr = self.ptr.offset(1);
+                Some(ptr::read(old))
             }
-
-            Some(e)
         }
     }
 }
