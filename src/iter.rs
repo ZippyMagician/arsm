@@ -8,7 +8,6 @@ use std::ptr;
 #[derive(Debug, PartialEq)]
 pub struct BufIter<T> {
     ptr: *mut T,
-    // Has to be *mut T and not *const T so they can be compared
     end: *const T,
 }
 
