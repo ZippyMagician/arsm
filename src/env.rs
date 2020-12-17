@@ -1,6 +1,5 @@
-use crate::iter::BufIter;
 use crate::registry::Register;
-use crate::token::Op;
+use crate::utils::{iter::BufIter, token::Op};
 
 // Simple environment structure that holds the memory and registry
 // TODO: Stack

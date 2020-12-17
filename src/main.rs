@@ -3,13 +3,9 @@ extern crate clap;
 #[macro_use]
 extern crate lazy_static;
 
-mod consts;
 mod env;
-mod iter;
 mod parser;
 mod registry;
-mod status;
-mod token;
 mod utils;
 
 fn main() {

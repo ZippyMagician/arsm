@@ -2,12 +2,9 @@ use std::iter::Peekable;
 
 use clap::ArgMatches;
 
-use crate::consts::*;
 use crate::env::Environment;
 use crate::registry::Position;
-use crate::status::Status;
-use crate::token::*;
-use crate::utils;
+use crate::utils::{self, consts::*, status::Status, token::*};
 
 fn flush(buf: &mut String, chr: char) {
     buf.clear();
