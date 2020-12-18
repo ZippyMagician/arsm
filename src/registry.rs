@@ -18,12 +18,7 @@ impl Register {
     }
 
     pub fn read_8(&mut self, key: char, half: Position) -> u8 {
-        let pos = self.from_key_pos(key);
-        if half == Position::Upper {
-            utils::read_from_mem_8(self.buf.as_mut(), pos + 1)
-        } else {
-            utils::read_from_mem_8(self.buf.as_mut(), pos)
-        }
+        self.from_key(key)[if half == Position::Upper { 1 } else { 0 }]
     }
 
     pub fn read_16(&mut self, key: char) -> i16 {
@@ -41,9 +36,9 @@ impl Register {
         let pos = self.from_key_pos(key);
 
         if half == Position::Upper {
-            utils::write_to_mem_8(self.buf.as_mut(), pos + 1, val);
+            self.buf[pos + 1] = val;
         } else {
-            utils::write_to_mem_8(self.buf.as_mut(), pos, val);
+            self.buf[pos] = val;
         }
     }
 
