@@ -59,8 +59,6 @@ impl Register {
 
         unsafe {
             utils::write(self.buf.as_mut(), lpos, &slice[0..2]);
-        }
-        unsafe {
             utils::write(self.buf.as_mut(), rpos, &slice[2..4]);
         }
     }
