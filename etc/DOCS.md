@@ -35,6 +35,11 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `jmp <A>` -> Goto the branch entitled A (note: A is a **label**, not a **branch**)
 * `je <A> <B> <C>` -> Goto branch C if A == B
 * `jne <A> <B> <C>` -> Goto branch C if A != B
+* `jz <A> <B>` -> Goto branch B if A == 0
+* `jg <A> <B> <C>` -> Goto branch C if A > B
+* `jge <A> <B> <C>` -> Goto branch C if A >= B
+* `jl <A> <B> <C>` -> Goto branch C if A < B
+* `jle <A> <B> <C>` -> Goto branch C if A <= B
 * `mul <A> <B>` -> Multiply A by B, store in A
 * `div <A> <B>` -> Divide A by B, store in A
 * `add <A> <B>` -> Add A and B, store in A
