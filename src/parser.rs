@@ -236,13 +236,11 @@ fn to_numeric(env: &mut Environment, ast: &[Op], obj: &Op) -> i32 {
 
         Op::Memory(ident, op) => {
             let val = to_numeric(env, ast, &op) as usize;
-            unsafe {
-                match ident {
-                    '#' => utils::read_from_mem_8(env.mem.as_mut(), val) as i32,
-                    '$' => utils::read_from_mem_16(env.mem.as_mut(), val) as i32,
-                    '@' => utils::read_from_mem_32(env.mem.as_mut(), val),
-                    _ => panic!("Invalid memory identifier: '{}'", ident),
-                }
+            match ident {
+                '#' => utils::read_from_mem_8(env.mem.as_mut(), val) as i32,
+                '$' => utils::read_from_mem_16(env.mem.as_mut(), val) as i32,
+                '@' => utils::read_from_mem_32(env.mem.as_mut(), val),
+                _ => panic!("Invalid memory identifier: '{}'", ident),
             }
         }
 
@@ -311,13 +309,11 @@ fn modify_memory(env: &mut Environment, ast: &[Op], obj: &Op, val: &Op) {
         Op::Memory(ident, op) => {
             let pos = to_numeric(env, &ast, &op) as usize;
             let val = to_numeric(env, &ast, val);
-            unsafe {
-                match ident {
-                    '#' => utils::write_to_mem_8(env.mem.as_mut(), pos, val as u8),
-                    '$' => utils::write_to_mem_16(env.mem.as_mut(), pos, val as i16),
-                    '@' => utils::write_to_mem_32(env.mem.as_mut(), pos, val),
-                    _ => panic!("Invalid identifier for memory: '{}'", ident),
-                }
+            match ident {
+                '#' => utils::write_to_mem_8(env.mem.as_mut(), pos, val as u8),
+                '$' => utils::write_to_mem_16(env.mem.as_mut(), pos, val as i16),
+                '@' => utils::write_to_mem_32(env.mem.as_mut(), pos, val),
+                _ => panic!("Invalid identifier for memory: '{}'", ident),
             }
         }
         _ => panic!("Invalid parameter: {:?}", obj),
@@ -427,17 +423,67 @@ fn run_cmd(
             })
         }
 
+        "jz" => {
+            let check = to_numeric(env, ast, args[0]);
+            Box::new(if check == 0 {
+                *ind = to_numeric(env, ast, args[1]) as usize;
+                true
+            } else {
+                false
+            })
+        }
+
+        "jg" => {
+            let left = to_numeric(env, ast, args[0]);
+            let right = to_numeric(env, ast, args[1]);
+            Box::new(if left > right {
+                *ind = to_numeric(env, ast, args[2]) as usize;
+                true
+            } else {
+                false
+            })
+        }
+
+        "jge" => {
+            let left = to_numeric(env, ast, args[0]);
+            let right = to_numeric(env, ast, args[1]);
+            Box::new(if left >= right {
+                *ind = to_numeric(env, ast, args[2]) as usize;
+                true
+            } else {
+                false
+            })
+        }
+
+        "jl" => {
+            let left = to_numeric(env, ast, args[0]);
+            let right = to_numeric(env, ast, args[1]);
+            Box::new(if left < right {
+                *ind = to_numeric(env, ast, args[2]) as usize;
+                true
+            } else {
+                false
+            })
+        }
+
+        "jle" => {
+            let left = to_numeric(env, ast, args[0]);
+            let right = to_numeric(env, ast, args[1]);
+            Box::new(if left == right {
+                *ind = to_numeric(env, ast, args[2]) as usize;
+                true
+            } else {
+                false
+            })
+        }
+
         "str" => match args[0] {
             Op::String(val) => {
                 for (i, chr) in val.chars().enumerate() {
-                    unsafe {
-                        utils::write_to_mem_8(env.mem.as_mut(), i, chr as u8);
-                    }
+                    utils::write_to_mem_8(env.mem.as_mut(), i, chr as u8);
                 }
                 let terminator = to_numeric(env, ast, args[1]) as u8;
-                unsafe {
-                    utils::write_to_mem_8(env.mem.as_mut(), val.len(), terminator);
-                }
+                utils::write_to_mem_8(env.mem.as_mut(), val.len(), terminator);
                 Box::new(false)
             }
 
@@ -448,7 +494,7 @@ fn run_cmd(
             let mut i = to_numeric(env, ast, args[0]) as usize;
             let terminator = to_numeric(env, ast, args[1]) as u8;
             let mut len = 0;
-            while unsafe { utils::read_from_mem_8(env.mem.as_mut(), i) } != terminator {
+            while utils::read_from_mem_8(env.mem.as_mut(), i) != terminator {
                 len += 1;
                 i += 1;
             }

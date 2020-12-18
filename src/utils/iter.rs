@@ -6,6 +6,7 @@ use std::ptr;
 // This fixes that, as it explicitly allocates the data onto the heap
 // It is also rather fast, making use of std::ptr
 #[derive(Debug, PartialEq)]
+#[repr(align(64))]
 pub struct BufIter<T> {
     ptr: *mut T,
     end: *const T,
@@ -41,5 +42,27 @@ impl<T> Iterator for BufIter<T> {
                 Some(ptr::read(old))
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod iter_tests {
+    use super::*;
+
+    #[test]
+    fn test_read() {
+        let mut v = vec![1, 2, 3, 5, 3, 9, 6];
+        let mut iter = BufIter::new(v.as_mut_slice());
+
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(2));
+        iter.next();
+        assert_eq!(iter.next(), Some(5))
+    }
+
+    #[test]
+    fn test_empty() {
+        let mut iter: BufIter<u8> = BufIter::new(vec![].as_mut_slice());
+        assert!(iter.next().is_none());
     }
 }

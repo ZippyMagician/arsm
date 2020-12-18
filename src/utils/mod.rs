@@ -3,20 +3,8 @@ pub mod iter;
 pub mod status;
 pub mod token;
 
-use std::convert::AsMut;
 use std::fs;
 use std::ptr;
-
-// Safety: Only works when the size of <A> divided by the size of <B> is the length of the slice.
-pub fn clone_into_array<A, T>(slice: &[T]) -> A
-where
-    A: Default + AsMut<[T]>,
-    T: Clone,
-{
-    let mut a = Default::default();
-    <A as AsMut<[T]>>::as_mut(&mut a).clone_from_slice(slice);
-    a
-}
 
 // Joines two slices of length 2 → slice of length 4
 pub fn join_slices<'a>(left: &'a [u8], right: &'a [u8]) -> [u8; 4] {
@@ -24,7 +12,7 @@ pub fn join_slices<'a>(left: &'a [u8], right: &'a [u8]) -> [u8; 4] {
 }
 
 // Unchecked write (assumes inside index)
-unsafe fn write(mem: &mut [u8], pos: usize, vals: &[u8]) {
+pub unsafe fn write(mem: &mut [u8], pos: usize, vals: &[u8]) {
     let mut p = mem.as_mut_ptr().add(pos);
     let len = mem.len();
 
@@ -42,40 +30,48 @@ unsafe fn read(mem: &mut [u8], pos: usize) -> u8 {
 }
 
 // Safety: Same safety requirements as std::ptr::write_bytes
-pub unsafe fn write_to_mem_8(mem: &mut [u8], pos: usize, val: u8) {
-    write(mem, pos, &[val]);
+pub fn write_to_mem_8(mem: &mut [u8], pos: usize, val: u8) {
+    unsafe {
+        write(mem, pos, &[val]);
+    }
 }
 
 // Safety: Same safety requirements as std::ptr::write_bytes
-pub unsafe fn write_to_mem_16(mem: &mut [u8], pos: usize, val: i16) {
+pub fn write_to_mem_16(mem: &mut [u8], pos: usize, val: i16) {
     let ne_bytes = val.to_ne_bytes();
-    write(mem, pos, &ne_bytes);
+    unsafe {
+        write(mem, pos, &ne_bytes);
+    }
 }
 
 // Safety: Same safety requirements as std::ptr::write_bytes
-pub unsafe fn write_to_mem_32(mem: &mut [u8], pos: usize, val: i32) {
+pub fn write_to_mem_32(mem: &mut [u8], pos: usize, val: i32) {
     let ne_bytes = val.to_ne_bytes();
-    write(mem, pos, &ne_bytes);
+    unsafe {
+        write(mem, pos, &ne_bytes);
+    }
 }
 
 // Safety: Same safety requirements as std::ptr::read
-pub unsafe fn read_from_mem_8(mem: &mut [u8], pos: usize) -> u8 {
-    read(mem, pos)
+pub fn read_from_mem_8(mem: &mut [u8], pos: usize) -> u8 {
+    unsafe { read(mem, pos) }
 }
 
 // Safety: Same safety requirements as std::ptr::read
-pub unsafe fn read_from_mem_16(mem: &mut [u8], pos: usize) -> i16 {
-    i16::from_ne_bytes([read(mem, pos), read(mem, pos + 1)])
+pub fn read_from_mem_16(mem: &mut [u8], pos: usize) -> i16 {
+    unsafe { i16::from_ne_bytes([read(mem, pos), read(mem, pos + 1)]) }
 }
 
 // Safety: Same safety requirements as std::ptr::read
-pub unsafe fn read_from_mem_32(mem: &mut [u8], pos: usize) -> i32 {
-    i32::from_ne_bytes([
-        read(mem, pos),
-        read(mem, pos + 1),
-        read(mem, pos + 2),
-        read(mem, pos + 3),
-    ])
+pub fn read_from_mem_32(mem: &mut [u8], pos: usize) -> i32 {
+    unsafe {
+        i32::from_ne_bytes([
+            read(mem, pos),
+            read(mem, pos + 1),
+            read(mem, pos + 2),
+            read(mem, pos + 3),
+        ])
+    }
 }
 
 // Read file and return the result
@@ -92,17 +88,15 @@ mod mem_tests {
         let mut mem = vec![0u8; 16];
         let mem_slice = mem.as_mut_slice();
 
-        unsafe {
-            write_to_mem_8(mem_slice, 15, 3);
-            write_to_mem_8(mem_slice, 0, 56);
-            write_to_mem_16(mem_slice, 2, 467);
-            write_to_mem_32(mem_slice, 5, 567_735);
+        write_to_mem_8(mem_slice, 15, 3);
+        write_to_mem_8(mem_slice, 0, 56);
+        write_to_mem_16(mem_slice, 2, 467);
+        write_to_mem_32(mem_slice, 5, 567_735);
 
-            assert_eq!(read_from_mem_32(mem_slice, 5), 567_735);
-            assert_eq!(read_from_mem_8(mem_slice, 0), 56);
-            assert_eq!(read_from_mem_16(mem_slice, 2), 467);
-            assert_eq!(read_from_mem_8(mem_slice, 4), 0);
-            assert_eq!(read_from_mem_8(mem_slice, 15), 3);
-        }
+        assert_eq!(read_from_mem_32(mem_slice, 5), 567_735);
+        assert_eq!(read_from_mem_8(mem_slice, 0), 56);
+        assert_eq!(read_from_mem_16(mem_slice, 2), 467);
+        assert_eq!(read_from_mem_8(mem_slice, 4), 0);
+        assert_eq!(read_from_mem_8(mem_slice, 15), 3);
     }
 }

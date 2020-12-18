@@ -23,6 +23,11 @@ lazy_static! {
             "jmp" 1;
             "je" 3;
             "jne" 3;
+            "jl" 3;
+            "jle" 3;
+            "jg" 3;
+            "jge" 3;
+            "jz" 2;
             "mul" 2;
             "div" 2;
             "add" 2;
