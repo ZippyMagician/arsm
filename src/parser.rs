@@ -148,8 +148,10 @@ pub fn current_tok(stream: &mut Peekable<std::slice::Iter<'_, Node>>, cur: &Node
                 } else {
                     panic!("Invalid beginning to a memory identifier: Missing '['")
                 }
+            } else if *chr == '[' || *chr == ']' {
+                panic!("Invalid free-standing punctuation '{}'.", chr);
             } else {
-                panic!("Math unimplemented");
+                todo!("Math unimplemented");
             }
         }
 
@@ -273,7 +275,7 @@ fn to_numeric(env: &mut Environment, ast: &[Op], obj: &Op) -> i32 {
             })
             .unwrap() as i32,
 
-        Op::BinOp(_, _, _) => panic!("Math unimplemented"),
+        Op::BinOp(_, _, _) => todo!("Math unimplemented"),
 
         Op::Char(chr) => *chr as u8 as i32,
 

@@ -3,7 +3,6 @@ pub mod iter;
 pub mod status;
 pub mod token;
 
-use std::fs;
 use std::ptr;
 
 // Joines two slices of length 2 → slice of length 4
@@ -72,11 +71,6 @@ pub fn read_from_mem_32(mem: &mut [u8], pos: usize) -> i32 {
             read(mem, pos + 3),
         ])
     }
-}
-
-// Read file and return the result
-pub fn read_file(path: &'_ str) -> std::io::Result<String> {
-    fs::read_to_string(path)
 }
 
 #[cfg(test)]
