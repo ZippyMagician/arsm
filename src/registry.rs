@@ -52,10 +52,8 @@ impl Register {
         let lpos = self.from_key_pos(left);
         let rpos = self.from_key_pos(right);
 
-        unsafe {
-            utils::write(self.buf.as_mut(), lpos, &slice[0..2]);
-            utils::write(self.buf.as_mut(), rpos, &slice[2..4]);
-        }
+        utils::write(self.buf.as_mut(), lpos, &slice[0..2]);
+        utils::write(self.buf.as_mut(), rpos, &slice[2..4]);
     }
 
     fn from_key(&self, key: char) -> [u8; 2] {
