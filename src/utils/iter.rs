@@ -5,8 +5,7 @@ use std::ptr;
 // Namely, there were issues to do with the lifetime of the string contents of a read file
 // This fixes that, as it explicitly allocates the data onto the heap
 // It is also rather fast, making use of std::ptr
-#[derive(Debug, PartialEq)]
-#[repr(align(64))]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct BufIter<T> {
     ptr: *mut T,
     end: *const T,
@@ -62,7 +61,7 @@ mod iter_tests {
 
     #[test]
     fn test_empty() {
-        let mut iter: BufIter<u8> = BufIter::new(vec![].as_mut_slice());
+        let mut iter: BufIter<u8> = BufIter::new(&mut []);
         assert!(iter.next().is_none());
     }
 }
