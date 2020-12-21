@@ -13,6 +13,6 @@
   je db 0 10 eh :skipanic
   jmp :panicloop
 ..skipanic
-    hlt
+    hlt 0
 
 chr 78

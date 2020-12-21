@@ -508,7 +508,7 @@ fn run_cmd(
             None => 0,
         }),
 
-        "hlt" => std::process::exit(0),
+        "hlt" => std::process::exit(to_numeric(env, ast, args[0])),
 
         _ => panic!("Command: {} unrecognized", cmd),
     }
