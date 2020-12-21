@@ -48,3 +48,4 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `db <A> <B>` -> Get length of data, starting at point A in memory and ending when the point in memory equals B
 * `in` -> Get next byte of STDIN or a null-byte (`0`) if none left
 * `chr <A>` -> Print A as a character instead of number
+* `hlt <A>` -> Terminates program with exit code A
