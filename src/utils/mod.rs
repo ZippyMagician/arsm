@@ -29,23 +29,19 @@ pub fn write_to_mem_16(mem: &mut [u8], pos: usize, val: i16) {
     write(mem, pos, &ne_bytes);
 }
 
-// Safety: Same safety requirements as std::ptr::write_bytes
 pub fn write_to_mem_32(mem: &mut [u8], pos: usize, val: i32) {
     let ne_bytes = val.to_ne_bytes();
     write(mem, pos, &ne_bytes);
 }
 
-// Safety: Same safety requirements as std::ptr::read
 pub fn read_from_mem_8(mem: &mut [u8], pos: usize) -> u8 {
     read(mem, pos)
 }
 
-// Safety: Same safety requirements as std::ptr::read
 pub fn read_from_mem_16(mem: &mut [u8], pos: usize) -> i16 {
     i16::from_ne_bytes([read(mem, pos), read(mem, pos + 1)])
 }
 
-// Safety: Same safety requirements as std::ptr::read
 pub fn read_from_mem_32(mem: &mut [u8], pos: usize) -> i32 {
     i32::from_ne_bytes([
         read(mem, pos),
