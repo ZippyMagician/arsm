@@ -289,7 +289,13 @@ fn to_numeric<T: Num + num_traits::NumCast>(env: &mut Environment, ast: &[Op], o
 
         _ => panic!("Invalid numeric literal: {:?}", obj),
     }
-    .unwrap()
+    .unwrap_or_else(|| {
+        panic!(
+            "Could not convert {:?} to type <{}>",
+            obj,
+            std::intrinsics::type_name::<T>()
+        )
+    })
 }
 
 // Pass in the op in which memory is modified, and it will automatically update it with the value
