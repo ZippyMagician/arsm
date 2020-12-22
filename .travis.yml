@@ -10,9 +10,10 @@ matrix:
         - cargo build --verbose
         - cargo test --verbose
     - name: "Exterior tests"
-      language: node_js
-      node_js: "11.1.0"
+      language: rust
       rust: stable
+      before_script:
+        - nvm install 11.1.0
       script:
         - node test
 
