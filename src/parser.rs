@@ -293,7 +293,7 @@ fn to_numeric<T: Num + num_traits::NumCast>(env: &mut Environment, ast: &[Op], o
         panic!(
             "Could not convert {:?} to type <{}>",
             obj,
-            std::intrinsics::type_name::<T>()
+            std::any::type_name::<T>()
         )
     })
 }

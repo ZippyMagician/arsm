@@ -1,17 +1,17 @@
 language: rust
-rust: nightly
+rust: stable
 
 matrix:
   include:
     - name: "Interior tests"
       language: rust
-      rust: nightly
+      rust: stable
       script:
         - cargo build --verbose
         - cargo test --verbose
     - name: "Exterior tests"
       language: rust
-      rust: nightly
+      rust: stable
       before_script:
         - nvm install 11.1.0
       script:
