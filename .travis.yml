@@ -12,8 +12,7 @@ matrix:
     - name: "Exterior tests"
       language: node_js
       node_js: "11.1.0"
-      before_script:
-        - rustup install stable
+      rust: stable
       script:
         - node test
 
