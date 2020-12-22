@@ -10,5 +10,6 @@ path = "src/main.rs"
 name = "arsm"
 
 [dependencies]
-lazy_static = "1.4.0"
 clap = "2.33.3"
+lazy_static = "1.4.0"
+num-traits = "0.2"

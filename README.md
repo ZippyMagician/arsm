@@ -13,6 +13,7 @@ Use the command `node test` to test every case in `./test_cases`. A new case cal
  1. Creating `N.arsm`, which is the program
  2. Creating `N.in`, which is the input for the program
  3. Creating `N.out`, which is the output the program should return
+ARSM does not make ANY number checks. If you try and pass a negative value into an unsigned 8-bit register, the interpreter will not complain. It is up to the user to ensure they do not perform any invalid operations.
 
 ## Example Programs
 Some simple programs written in arsm
