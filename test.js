@@ -25,6 +25,7 @@ for (let c in map) {
             console.log("Case " + c[0] + ": \x1b[31m Failed\x1b[0m");
             console.log("  Expected: " + c[2]);
             console.log("  Got:      " + stdout);
+            console.log("  Errors: " + stderr);
 
             process.exit(1);
         }
