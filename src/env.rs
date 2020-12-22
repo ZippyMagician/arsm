@@ -17,7 +17,7 @@ pub struct Environment {
 impl Environment {
     pub fn new(buf: &mut [u8]) -> Self {
         Self {
-            mem: [0u8; 1024],
+            mem: [0_u8; 1024],
             registry: Register::init(),
             stdin: BufIter::new(buf),
             parent_ast: None,

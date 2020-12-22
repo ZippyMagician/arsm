@@ -183,7 +183,7 @@ pub fn current_tok(stream: &mut Peekable<std::slice::Iter<'_, Node>>, cur: &Node
     }
 }
 
-pub fn parse(ast: Vec<Op>, matches: ArgMatches) {
+pub fn parse(ast: Vec<Op>, matches: ArgMatches<'_>) {
     let mut v = match matches.value_of("stdin_file") {
         Some(path) => std::fs::read(path).unwrap_or_default(),
         None => matches
