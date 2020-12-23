@@ -13,7 +13,7 @@
     clippy::option_if_let_else,
     clippy::map_err_ignore,
     clippy::pub_enum_variant_names,
-    // I'm not writing out a bunch of importants when it isn't necessary
+    // I'm not writing out a bunch of imports when it isn't necessary
     clippy::wildcard_imports
 )]
 
@@ -29,7 +29,7 @@ mod utils;
 
 fn main() {
     let matches = clap_app!(arsm =>
-        (version: "0.1")
+        (version: "0.2")
         (author: "Joshua B. <zippymagician1@gmail.com>")
         (about: "A toy assembly flavor written in rust")
         (@arg INPUT: +required "The input file to be run")
