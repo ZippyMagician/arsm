@@ -12,9 +12,10 @@
     // Clojures don't have side effects, no point
     clippy::option_if_let_else,
     clippy::map_err_ignore,
-    clippy::pub_enum_variant_names
+    clippy::pub_enum_variant_names,
+    // I'm not writing out a bunch of importants when it isn't necessary
+    clippy::wildcard_imports
 )]
-
 
 #[macro_use]
 extern crate clap;
@@ -41,7 +42,9 @@ fn main() {
     // You can call `unwrap` here as INPUT is required
     let file = matches.value_of("INPUT").unwrap();
     if let Ok(program) = std::fs::read_to_string(file) {
-        parser::parse(parser::construct_tree(parser::lex(&*program)), matches);
+        let lexed = parser::lex(&*program);
+        let tree = parser::construct_tree(&lexed);
+        parser::parse(&tree, &matches);
     } else {
         panic!("File not found: {}", file);
     }

@@ -5,10 +5,9 @@ pub struct Register {
     buf: [u8; 10],
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Position {
     Lower,
-
     Upper,
 }
 
@@ -22,7 +21,7 @@ impl Register {
     }
 
     pub fn read_16(&mut self, key: char) -> i16 {
-        let pos = self.from_key_pos(key);
+        let pos = Self::from_key_pos(key);
         utils::read_from_mem_16(self.buf.as_mut(), pos)
     }
 
@@ -33,7 +32,7 @@ impl Register {
     }
 
     pub fn write_8(&mut self, key: char, half: Position, val: u8) {
-        let pos = self.from_key_pos(key);
+        let pos = Self::from_key_pos(key);
 
         if half == Position::Upper {
             self.buf[pos + 1] = val;
@@ -43,14 +42,14 @@ impl Register {
     }
 
     pub fn write_16(&mut self, key: char, val: i16) {
-        let pos = self.from_key_pos(key);
+        let pos = Self::from_key_pos(key);
         utils::write_to_mem_16(self.buf.as_mut(), pos, val);
     }
 
     pub fn write_32(&mut self, left: char, right: char, val: i32) {
         let slice = val.to_ne_bytes();
-        let lpos = self.from_key_pos(left);
-        let rpos = self.from_key_pos(right);
+        let lpos = Self::from_key_pos(left);
+        let rpos = Self::from_key_pos(right);
 
         utils::write(self.buf.as_mut(), lpos, &slice[0..2]);
         utils::write(self.buf.as_mut(), rpos, &slice[2..4]);
@@ -61,7 +60,7 @@ impl Register {
         [self.buf[pos * 2], self.buf[pos * 2 + 1]]
     }
 
-    fn from_key_pos(&self, key: char) -> usize {
+    fn from_key_pos(key: char) -> usize {
         let pos = "abcdeABCDE".find(key).unwrap() % 5;
         pos * 2
     }

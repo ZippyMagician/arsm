@@ -85,7 +85,7 @@ pub fn lex(program: &str) -> Vec<Node> {
     res
 }
 
-pub fn construct_tree(stream: Vec<Node>) -> Vec<Op> {
+pub fn construct_tree(stream: &[Node]) -> Vec<Op> {
     let mut res = Vec::new();
     // Note: using a peekable iterator isn't really necessary yet, but it will be once I implement Node::Punctuation
     let mut stream = stream.iter().peekable();
@@ -183,7 +183,7 @@ pub fn current_tok(stream: &mut Peekable<std::slice::Iter<'_, Node>>, cur: &Node
     }
 }
 
-pub fn parse(ast: Vec<Op>, matches: ArgMatches<'_>) {
+pub fn parse(ast: &[Op], matches: &ArgMatches<'_>) {
     let mut v = match matches.value_of("stdin_file") {
         Some(path) => std::fs::read(path).unwrap_or_default(),
         None => matches
@@ -528,7 +528,7 @@ fn run_cmd(
         }
 
         "in" => Box::new(match env.stdin.next() {
-            Some(val) => val as i32,
+            Some(val) => i32::from(val),
             None => 0,
         }),
 
