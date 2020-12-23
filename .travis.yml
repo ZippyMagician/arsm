@@ -1,23 +1,13 @@
 language: rust
 rust: stable
 
-matrix:
-  include:
-    - name: "Interior tests"
-      language: rust
-      rust: stable
-      before_script:
-        - rustup component add clippy
-      script:
-        - cargo clippy
-        - cargo build --verbose
-        - cargo test --verbose
-    - name: "Exterior tests"
-      language: rust
-      rust: stable
-      before_script:
-        - nvm install 11.1.0
-      script:
-        - node test
+before_script:
+  - rustup component add clippy
+  - nvm install 11.1.0
+script:
+  - cargo clippy
+  - cargo build --verbose
+  - cargo test --verbose
+  - node test
 
 cache: cargo
