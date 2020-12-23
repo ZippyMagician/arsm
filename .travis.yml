@@ -6,6 +6,8 @@ matrix:
     - name: "Interior tests"
       language: rust
       rust: stable
+      before_script:
+        - rustup component add clippy
       script:
         - cargo clippy
         - cargo build --verbose
