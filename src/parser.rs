@@ -184,13 +184,16 @@ pub fn current_tok(stream: &mut Peekable<std::slice::Iter<'_, Node>>, cur: &Node
 }
 
 pub fn parse(ast: &[Op], matches: &ArgMatches<'_>) {
-    let mut v = match matches.value_of("stdin_file") {
-        Some(path) => std::fs::read(path).unwrap_or_default(),
-        None => matches
+    let mut v = if matches.is_present("file") {
+        std::fs::read(matches.value_of("STDIN").unwrap_or_default()).unwrap_or_default()
+    } else if matches.is_present("user") {
+        matches
             .value_of("STDIN")
             .unwrap_or_default()
             .as_bytes()
-            .into(),
+            .into()
+    } else {
+        Vec::new()
     };
 
     let mut env = Environment::new(v.as_mut_slice());
