@@ -1,4 +1,3 @@
-use std::iter::Iterator;
 use std::ptr;
 
 // A custom iterator implementation that allows what `.iter()` does not for stdin
