@@ -8,7 +8,7 @@ pub mod token;
 macro_rules! bx {
     ($value:expr) => {
         Box::new($value)
-    }
+    };
 }
 
 // Joines two slices of length 2 → slice of length 4

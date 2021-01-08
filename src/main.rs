@@ -19,7 +19,8 @@ extern crate lazy_static;
 mod env;
 mod parser;
 mod registry;
-#[macro_use] mod utils;
+#[macro_use]
+mod utils;
 
 use std::time::Instant;
 

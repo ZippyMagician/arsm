@@ -27,8 +27,11 @@ impl<T> Iterator for BufIter<T> {
             None
         } else {
             self.c -= 1;
-            let out = unsafe { ptr::read(self.ptr.as_ptr()) };
-            self.ptr = unsafe { NonNull::new_unchecked(self.ptr.as_ptr().offset(1)) };
+            let out;
+            unsafe {
+                out = ptr::read(self.ptr.as_ptr());
+                self.ptr = NonNull::new_unchecked(self.ptr.as_ptr().offset(1));
+            }
             Some(out)
         }
     }
