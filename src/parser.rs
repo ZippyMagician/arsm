@@ -495,7 +495,7 @@ fn run_cmd(
         "jle" => {
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
-            Box::new(if left == right {
+            Box::new(if left <= right {
                 *ind = to_numeric(env, ast, args[2]);
                 true
             } else {

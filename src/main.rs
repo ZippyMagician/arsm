@@ -3,18 +3,12 @@
 #![warn(clippy::pedantic)]
 #![allow(
     clippy::similar_names,
-    // A bit too pedantic for me
-    clippy::if_not_else,
     clippy::module_name_repetitions,
-    clippy::single_match_else,
-    clippy::match_same_arms,
-    clippy::too_many_lines,
-    // Clojures don't have side effects, no point
-    clippy::option_if_let_else,
-    clippy::map_err_ignore,
     clippy::pub_enum_variant_names,
-    // I'm not writing out a bunch of imports when it isn't necessary
-    clippy::wildcard_imports
+    clippy::if_not_else,
+    clippy::option_if_let_else,
+    clippy::wildcard_imports,
+    clippy::too_many_lines
 )]
 
 #[macro_use]
