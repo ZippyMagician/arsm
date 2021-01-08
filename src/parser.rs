@@ -3,6 +3,7 @@ use std::iter::Peekable;
 use clap::ArgMatches;
 use num_traits::Num;
 
+use crate::bx;
 use crate::env::Environment;
 use crate::registry::Position;
 use crate::utils::{self, consts::*, status::Status, token::*};
@@ -135,7 +136,7 @@ pub fn current_tok(stream: &mut Peekable<std::slice::Iter<'_, Node>>, cur: &Node
             if *chr == '#' || *chr == '$' || *chr == '@' {
                 if let Some(Node::Punctuation('[')) = stream.next() {
                     let tok = stream.next();
-                    let res = Box::new(current_tok(
+                    let res = bx!(current_tok(
                         stream,
                         tok.unwrap_or_else(|| {
                             panic!("Invalid termination of a memory identifier: Missing body")
@@ -224,11 +225,11 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
                 if run_op(env, &body, &mut i).has_jmp() {
                     env.clear_parent();
                     *ind = i;
-                    return Box::new(true);
+                    return bx!(true);
                 }
             }
             env.clear_parent();
-            Box::new(false)
+            bx!(false)
         }
 
         _ => panic!("Invalid top-level op: {:?}", ast[*ind]),
@@ -359,36 +360,36 @@ fn run_cmd(
         "mov" => {
             // Move second value into the first
             modify_memory(env, ast, args[0], args[1]);
-            Box::new(false)
+            bx!(false)
         }
 
         "inc" => {
             // new_val is 1 more than the previous value
-            let new_val = Box::new(Op::Numeric(1 + to_numeric::<i32>(env, ast, args[0])));
+            let new_val = bx!(Op::Numeric(1 + to_numeric::<i32>(env, ast, args[0])));
             modify_memory(env, ast, args[0], &new_val);
-            Box::new(false)
+            bx!(false)
         }
 
         "dec" => {
             // new_val is 1 less than the previous value
-            let new_val = Box::new(Op::Numeric(to_numeric::<i32>(env, ast, args[0]) - 1));
+            let new_val = bx!(Op::Numeric(to_numeric::<i32>(env, ast, args[0]) - 1));
             modify_memory(env, ast, args[0], &new_val);
-            Box::new(false)
+            bx!(false)
         }
 
         "out" => {
             print!("{}", to_numeric::<i32>(env, ast, args[0]));
-            Box::new(false)
+            bx!(false)
         }
 
         "chr" => {
             print!("{}", to_numeric::<u8>(env, ast, args[0]) as char);
-            Box::new(false)
+            bx!(false)
         }
 
         "jmp" => {
             *ind = to_numeric(env, ast, args[0]);
-            Box::new(true)
+            bx!(true)
         }
 
         "mul" => {
@@ -396,8 +397,8 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
 
-            modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left * right)));
-            Box::new(false)
+            modify_memory(env, ast, args[0], &bx!(Op::Numeric(left * right)));
+            bx!(false)
         }
 
         "div" => {
@@ -405,8 +406,8 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
 
-            modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left / right)));
-            Box::new(false)
+            modify_memory(env, ast, args[0], &bx!(Op::Numeric(left / right)));
+            bx!(false)
         }
 
         "sub" => {
@@ -414,8 +415,8 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
 
-            modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left - right)));
-            Box::new(false)
+            modify_memory(env, ast, args[0], &bx!(Op::Numeric(left - right)));
+            bx!(false)
         }
 
         "add" => {
@@ -423,14 +424,14 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
 
-            modify_memory(env, ast, args[0], &Box::new(Op::Numeric(left + right)));
-            Box::new(false)
+            modify_memory(env, ast, args[0], &bx!(Op::Numeric(left + right)));
+            bx!(false)
         }
 
         "je" => {
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
-            Box::new(if left == right {
+            bx!(if left == right {
                 *ind = to_numeric(env, ast, args[2]);
                 true
             } else {
@@ -441,7 +442,7 @@ fn run_cmd(
         "jne" => {
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
-            Box::new(if left != right {
+            bx!(if left != right {
                 *ind = to_numeric(env, ast, args[2]);
                 true
             } else {
@@ -451,7 +452,7 @@ fn run_cmd(
 
         "jz" => {
             let check: i32 = to_numeric(env, ast, args[0]);
-            Box::new(if check == 0 {
+            bx!(if check == 0 {
                 *ind = to_numeric(env, ast, args[1]);
                 true
             } else {
@@ -462,7 +463,7 @@ fn run_cmd(
         "jg" => {
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
-            Box::new(if left > right {
+            bx!(if left > right {
                 *ind = to_numeric(env, ast, args[2]);
                 true
             } else {
@@ -473,7 +474,7 @@ fn run_cmd(
         "jge" => {
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
-            Box::new(if left >= right {
+            bx!(if left >= right {
                 *ind = to_numeric(env, ast, args[2]);
                 true
             } else {
@@ -484,7 +485,7 @@ fn run_cmd(
         "jl" => {
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
-            Box::new(if left < right {
+            bx!(if left < right {
                 *ind = to_numeric(env, ast, args[2]);
                 true
             } else {
@@ -495,7 +496,7 @@ fn run_cmd(
         "jle" => {
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
-            Box::new(if left <= right {
+            bx!(if left <= right {
                 *ind = to_numeric(env, ast, args[2]);
                 true
             } else {
@@ -510,7 +511,7 @@ fn run_cmd(
                 }
                 let terminator: u8 = to_numeric(env, ast, args[1]);
                 utils::write_to_mem_8(env.mem.as_mut(), val.len(), terminator);
-                Box::new(false)
+                bx!(false)
             }
 
             _ => panic!(
@@ -527,10 +528,10 @@ fn run_cmd(
                 len += 1;
                 i += 1;
             }
-            Box::new(len)
+            bx!(len)
         }
 
-        "in" => Box::new(match env.stdin.next() {
+        "in" => bx!(match env.stdin.next() {
             Some(val) => i32::from(val),
             None => 0,
         }),

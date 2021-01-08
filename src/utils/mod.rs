@@ -3,6 +3,14 @@ pub mod iter;
 pub mod status;
 pub mod token;
 
+// I use Box::new a lot, so this makes it shorter
+#[macro_export]
+macro_rules! bx {
+    ($value:expr) => {
+        Box::new($value)
+    }
+}
+
 // Joines two slices of length 2 → slice of length 4
 pub fn join_slices<'a>(left: &'a [u8], right: &'a [u8]) -> [u8; 4] {
     [left[0], left[1], right[0], right[1]]
