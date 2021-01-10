@@ -11,9 +11,15 @@ pub struct BufIter<T> {
 }
 
 impl<T> BufIter<T> {
-    pub fn new(slice: &mut [T]) -> Self {
+    pub fn new(slice: &mut [T]) -> Self
+    where
+        T: std::fmt::Debug,
+    {
         Self {
-            ptr: NonNull::new(slice.as_mut_ptr()).unwrap(),
+            ptr: NonNull::new(slice.as_mut_ptr()).expect(&*format!(
+                "Could not construct iterator over STDIN {:?}",
+                slice
+            )),
             c: slice.len(),
         }
     }
