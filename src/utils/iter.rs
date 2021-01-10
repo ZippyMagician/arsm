@@ -1,9 +1,10 @@
 use std::ptr::{self, NonNull};
 
-// A custom iterator implementation that allows what `.iter()` does not for stdin
-// Namely, there were issues to do with the lifetime of the string contents of a read file
-// This fixes that, as it explicitly allocates the data onto the heap
-// It is also rather fast, making use of std::ptr
+// Instead of iterating over references to values, it iterates over owned values. 
+// This circumvents an issue with the lifetimes of files or Clap-owned user input.
+// It was easier to just make a custom iterator than it was to fix the lifetimes.
+// This iterator was designed for a very particular use-case, and as such is close
+// in speed to std::slice::Iter
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct BufIter<T> {
     ptr: NonNull<T>,
@@ -34,6 +35,7 @@ impl<T> Iterator for BufIter<T> {
         } else {
             self.c -= 1;
             let out;
+            // Safety: Bounds won't be reached yet, as self.c check ensures it. Therefore, this is unsafe is safe
             unsafe {
                 out = ptr::read(self.ptr.as_ptr());
                 self.ptr = NonNull::new_unchecked(self.ptr.as_ptr().offset(1));
