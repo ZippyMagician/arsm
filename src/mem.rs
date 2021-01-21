@@ -6,6 +6,8 @@ use std::alloc::{alloc_zeroed, dealloc, Layout};
 use std::fmt;
 use std::ptr;
 
+const U8_ALIGN: usize = std::mem::align_of::<u8>();
+
 #[derive(PartialEq)]
 pub struct Memory {
     mem: *mut u8,
@@ -20,7 +22,7 @@ impl Memory {
         assert!(mem_size - 10 >= s_size, "invalid size parameters provided");
         // Safety: Above check ensures this is valid
         let mem = unsafe {
-            alloc_zeroed(Layout::from_size_align(mem_size, 1).expect("Could not allocate memory"))
+            alloc_zeroed(Layout::from_size_align(mem_size, U8_ALIGN).expect("Could not allocate memory"))
         };
 
         Self {
@@ -224,7 +226,7 @@ impl Memory {
 impl std::ops::Drop for Memory {
     fn drop(&mut self) {
         unsafe {
-            dealloc(self.mem, Layout::from_size_align_unchecked(self.size, 1));
+            dealloc(self.mem, Layout::from_size_align_unchecked(self.size, U8_ALIGN));
         }
     }
 }
