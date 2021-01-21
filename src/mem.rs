@@ -160,8 +160,10 @@ impl Memory {
             None
         } else {
             self.s_len -= 2;
-            let num =
-                i16::from_ne_bytes([self.read(OFFSET + self.s_len), self.read(11 + self.s_len)]);
+            let num = i16::from_ne_bytes([
+                self.read(OFFSET + self.s_len),
+                self.read(OFFSET + 1 + self.s_len),
+            ]);
             unsafe {
                 ptr::write_bytes(self.mem.add(OFFSET + self.s_len), 0, 2);
             }
