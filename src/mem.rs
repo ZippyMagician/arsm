@@ -1,12 +1,11 @@
 #![allow(dead_code)]
 
+use crate::utils::consts::{OFFSET, U8_ALIGN};
 use crate::utils::traits::*;
 
 use std::alloc::{alloc_zeroed, dealloc, Layout};
 use std::fmt;
 use std::ptr;
-
-const U8_ALIGN: usize = std::mem::align_of::<u8>();
 
 #[derive(PartialEq)]
 pub struct Memory {
@@ -16,13 +15,18 @@ pub struct Memory {
     s_len: usize,
 }
 
-// GENERAL PURPOSE \\
+// GENERAL PURPOSE
 impl Memory {
     pub fn init(mem_size: usize, s_size: usize) -> Self {
-        assert!(mem_size - 10 >= s_size, "invalid size parameters provided");
+        assert!(
+            mem_size - OFFSET >= s_size,
+            "invalid size parameters provided"
+        );
         // Safety: Above check ensures this is valid
         let mem = unsafe {
-            alloc_zeroed(Layout::from_size_align(mem_size, U8_ALIGN).expect("Could not allocate memory"))
+            alloc_zeroed(
+                Layout::from_size_align(mem_size, U8_ALIGN).expect("Could not allocate memory"),
+            )
         };
 
         Self {
@@ -54,6 +58,7 @@ impl Memory {
         }
 
         self.s_size = s_size;
+        self.s_len = self.s_len.min(s_size);
     }
 
     #[inline]
@@ -66,11 +71,11 @@ impl Memory {
 
     #[inline]
     pub fn memory_len(&self) -> usize {
-        self.size - self.s_size - 10
+        self.size - self.s_size - OFFSET
     }
 }
 
-// REGISTRY \\
+// REGISTRY
 impl Memory {
     pub fn r_write<N: Num, P: Position>(&mut self, keys: &P, element: &N) {
         let bytes = element.get_bytes();
@@ -121,7 +126,7 @@ impl Memory {
     }
 }
 
-// STACK \\
+// STACK
 impl Memory {
     pub fn s_push<N: Num>(&mut self, element: &N) {
         let bytes = element.get_bytes();
@@ -129,7 +134,7 @@ impl Memory {
             if self.s_len == self.s_size {
                 panic!("s is full. Cannot fit size {} element.", bytes.len());
             } else {
-                self.write(10 + self.s_len, *byte);
+                self.write(OFFSET + self.s_len, *byte);
                 self.s_len += 1;
             }
         }
@@ -140,10 +145,10 @@ impl Memory {
             None
         } else {
             self.s_len -= 1;
-            let num = self.read(10 + self.s_len);
+            let num = self.read(OFFSET + self.s_len);
             // Let's be sanitary and zero the value
             unsafe {
-                ptr::write(self.mem.add(10 + self.s_len), 0);
+                ptr::write(self.mem.add(OFFSET + self.s_len), 0);
             }
 
             Some(num)
@@ -155,9 +160,10 @@ impl Memory {
             None
         } else {
             self.s_len -= 2;
-            let num = i16::from_ne_bytes([self.read(10 + self.s_len), self.read(11 + self.s_len)]);
+            let num =
+                i16::from_ne_bytes([self.read(OFFSET + self.s_len), self.read(11 + self.s_len)]);
             unsafe {
-                ptr::write_bytes(self.mem.add(10 + self.s_len), 0, 2);
+                ptr::write_bytes(self.mem.add(OFFSET + self.s_len), 0, 2);
             }
 
             Some(num)
@@ -170,13 +176,13 @@ impl Memory {
         } else {
             self.s_len -= 4;
             let num = i32::from_ne_bytes([
-                self.read(10 + self.s_len),
-                self.read(11 + self.s_len),
-                self.read(12 + self.s_len),
-                self.read(13 + self.s_len),
+                self.read(OFFSET + self.s_len),
+                self.read(OFFSET + 1 + self.s_len),
+                self.read(OFFSET + 2 + self.s_len),
+                self.read(OFFSET + 3 + self.s_len),
             ]);
             unsafe {
-                ptr::write_bytes(self.mem.add(10 + self.s_len), 0, 4);
+                ptr::write_bytes(self.mem.add(OFFSET + self.s_len), 0, 4);
             }
 
             Some(num)
@@ -184,10 +190,10 @@ impl Memory {
     }
 }
 
-// MEMORY \\
+// MEMORY
 impl Memory {
     pub fn m_write<N: Num>(&mut self, pos: usize, val: &N) {
-        let start = 10 + self.s_size;
+        let start = OFFSET + self.s_size;
         let bytes = val.get_bytes();
         for (i, byte) in bytes.iter().enumerate() {
             if start + pos + i >= self.size {
@@ -204,7 +210,7 @@ impl Memory {
     }
 
     pub fn m_read<N: Num>(&self, pos: usize) -> N {
-        let start = 10 + self.s_size;
+        let start = OFFSET + self.s_size;
 
         match N::len() {
             1 => N::from_bytes(&[self.read(start + pos)]),
@@ -226,7 +232,10 @@ impl Memory {
 impl std::ops::Drop for Memory {
     fn drop(&mut self) {
         unsafe {
-            dealloc(self.mem, Layout::from_size_align_unchecked(self.size, U8_ALIGN));
+            dealloc(
+                self.mem,
+                Layout::from_size_align_unchecked(self.size, U8_ALIGN),
+            );
         }
     }
 }

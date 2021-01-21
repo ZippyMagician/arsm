@@ -15,7 +15,7 @@ pub struct Environment {
 impl Environment {
     pub fn new(buf: &mut [u8]) -> Self {
         Self {
-            mem: Memory::init(1024, 20),
+            mem: Memory::init(1024, 0),
             stdin: BufIter::new(buf),
             parent_ast: None,
         }

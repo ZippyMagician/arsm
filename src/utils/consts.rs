@@ -8,10 +8,10 @@ macro_rules! insert_into {
     };
 }
 
+// For `parser.rs`
 pub const REGISTERS: &[char] = &['a', 'b', 'c', 'd', 'e', 'A', 'B', 'C', 'D', 'E'];
 pub const REGISTER_ENDINGS: &[char] = &['x', 'X', 'h', 'H', 'l', 'L'];
 pub const PUNCTUATION: &[&str] = &["+", "-", "*", "/", "[", "]", "#", "$", "@"];
-
 lazy_static! {
     pub static ref COMMANDS: HashMap<String, usize> = {
         let mut m: HashMap<String, usize> = HashMap::new();
@@ -41,3 +41,8 @@ lazy_static! {
         m
     };
 }
+
+// For `mem.rs`
+pub const U8_ALIGN: usize = std::mem::align_of::<u8>();
+// First 10 bytes are the registry, next 10 are reserved for future use
+pub const OFFSET: usize = 20;

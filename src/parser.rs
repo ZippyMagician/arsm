@@ -4,7 +4,7 @@ use clap::ArgMatches;
 
 use crate::bx;
 use crate::env::Environment;
-use crate::utils::{consts::*, status::Status, token::*, traits::*};
+use crate::utils::{consts::*, token::*, traits::*};
 
 fn flush(buf: &mut String, chr: char) {
     buf.clear();
