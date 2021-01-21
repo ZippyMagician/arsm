@@ -17,8 +17,8 @@ extern crate clap;
 extern crate lazy_static;
 
 mod env;
+mod mem;
 mod parser;
-mod registry;
 #[macro_use]
 mod utils;
 

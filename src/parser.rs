@@ -1,12 +1,10 @@
 use std::iter::Peekable;
 
 use clap::ArgMatches;
-use num_traits::Num;
 
 use crate::bx;
 use crate::env::Environment;
-use crate::registry::Position;
-use crate::utils::{self, consts::*, status::Status, token::*};
+use crate::utils::{consts::*, status::Status, token::*, traits::*};
 
 fn flush(buf: &mut String, chr: char) {
     buf.clear();
@@ -237,16 +235,17 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
 }
 
 // Converts op to a numeric value
-fn to_numeric<T: Num + num_traits::NumCast>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
+fn to_numeric<T: Num>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
     match obj {
         Op::Numeric(val) => num_traits::cast(*val),
 
         Op::Memory(ident, op) => {
-            let val: usize = to_numeric(env, ast, &op);
+            let val = to_numeric(env, ast, &op);
+
             match ident {
-                '#' => num_traits::cast(utils::read_from_mem_8(env.mem.as_mut(), val)),
-                '$' => num_traits::cast(utils::read_from_mem_16(env.mem.as_mut(), val)),
-                '@' => num_traits::cast(utils::read_from_mem_32(env.mem.as_mut(), val)),
+                '#' => num_traits::cast(env.mem.m_read::<u8>(val)),
+                '$' => num_traits::cast(env.mem.m_read::<i16>(val)),
+                '@' => num_traits::cast(env.mem.m_read::<i32>(val)),
                 _ => panic!("Invalid memory identifier: '{}'", ident),
             }
         }
@@ -255,14 +254,14 @@ fn to_numeric<T: Num + num_traits::NumCast>(env: &mut Environment, ast: &[Op], o
             let chrs = name.chars().collect::<Vec<char>>();
             if name.ends_with('x') {
                 if name.len() == 3 {
-                    num_traits::cast(env.registry.read_32(chrs[0], chrs[1]))
+                    num_traits::cast(env.mem.r_read::<i32>(&(chrs[0], chrs[1])))
                 } else {
-                    num_traits::cast(env.registry.read_16(chrs[0]))
+                    num_traits::cast(env.mem.r_read::<i16>(&chrs[0]))
                 }
             } else if name.ends_with('h') {
-                num_traits::cast(env.registry.read_8(chrs[0], Position::Upper))
+                num_traits::cast(env.mem.r_read::<u8>(&(chrs[0], Pos::Upper)))
             } else {
-                num_traits::cast(env.registry.read_8(chrs[0], Position::Lower))
+                num_traits::cast(env.mem.r_read::<u8>(&(chrs[0], Pos::Lower)))
             }
         }
 
@@ -309,38 +308,39 @@ fn modify_memory(env: &mut Environment, ast: &[Op], obj: &Op, val: &Op) {
             let chrs = name.chars().collect::<Vec<char>>();
             if name.ends_with('x') {
                 if chrs.len() == 3 {
-                    let val = to_numeric(env, &ast, val);
-                    env.registry.write_32(chrs[0], chrs[1], val);
+                    let val: i32 = to_numeric(env, &ast, val);
+                    env.mem.r_write(&(chrs[0], chrs[1]), &val);
                 } else {
-                    let val = to_numeric(env, &ast, val);
-                    env.registry.write_16(chrs[0], val);
+                    let val: i16 = to_numeric(env, &ast, val);
+                    env.mem.r_write(&chrs[0], &val);
                 }
             } else if name.ends_with('h') {
-                let val = to_numeric(env, &ast, val);
-                env.registry.write_8(chrs[0], Position::Upper, val);
+                let val: u8 = to_numeric(env, &ast, val);
+                env.mem.r_write(&(chrs[0], Pos::Upper), &val);
             } else {
-                let val = to_numeric(env, &ast, val);
-                env.registry.write_8(chrs[0], Position::Lower, val);
+                let val: u8 = to_numeric(env, &ast, val);
+                env.mem.r_write(&(chrs[0], Pos::Lower), &val);
             }
         }
 
         Op::Memory(ident, op) => {
-            let pos: usize = to_numeric(env, &ast, &op);
+            let pos = to_numeric(env, &ast, &op);
             match ident {
                 '#' => {
-                    let val = to_numeric(env, &ast, val);
-                    utils::write_to_mem_8(env.mem.as_mut(), pos, val)
+                    let val: u8 = to_numeric(env, &ast, val);
+                    env.mem.m_write(pos, &val);
                 }
 
                 '$' => {
-                    let val = to_numeric(env, &ast, val);
-                    utils::write_to_mem_16(env.mem.as_mut(), pos, val)
+                    let val: i16 = to_numeric(env, &ast, val);
+                    env.mem.m_write(pos, &val);
                 }
 
                 '@' => {
-                    let val = to_numeric(env, &ast, val);
-                    utils::write_to_mem_32(env.mem.as_mut(), pos, val)
+                    let val: i32 = to_numeric(env, &ast, val);
+                    env.mem.m_write(pos, &val);
                 }
+
                 _ => panic!("Invalid identifier for memory: '{}'", ident),
             }
         }
@@ -453,7 +453,7 @@ fn run_cmd(
         "jz" => {
             let check: i32 = to_numeric(env, ast, args[0]);
             bx!(if check == 0 {
-                *ind = to_numeric(env, ast, args[1]);
+                *ind = to_numeric(env, ast, args[2]);
                 true
             } else {
                 false
@@ -507,10 +507,11 @@ fn run_cmd(
         "str" => match args[0] {
             Op::String(val) => {
                 for (i, chr) in val.chars().enumerate() {
-                    utils::write_to_mem_8(env.mem.as_mut(), i, chr as u8);
+                    env.mem.m_write(i, &(chr as u8));
                 }
+
                 let terminator: u8 = to_numeric(env, ast, args[1]);
-                utils::write_to_mem_8(env.mem.as_mut(), val.len(), terminator);
+                env.mem.m_write(val.len(), &terminator);
                 bx!(false)
             }
 
@@ -521,10 +522,10 @@ fn run_cmd(
         },
 
         "db" => {
-            let mut i: usize = to_numeric(env, ast, args[0]);
+            let mut i = to_numeric(env, ast, args[0]);
             let terminator: u8 = to_numeric(env, ast, args[1]);
             let mut len = 0;
-            while utils::read_from_mem_8(env.mem.as_mut(), i) != terminator {
+            while env.mem.m_read::<u8>(i) != terminator {
                 len += 1;
                 i += 1;
             }

@@ -1,6 +1,6 @@
 use std::ptr::{self, NonNull};
 
-// Instead of iterating over references to values, it iterates over owned values. 
+// Instead of iterating over references to values, it iterates over owned values.
 // This circumvents an issue with the lifetimes of files or Clap-owned user input.
 // It was easier to just make a custom iterator than it was to fix the lifetimes.
 // This iterator was designed for a very particular use-case, and as such is close

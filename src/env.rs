@@ -1,13 +1,11 @@
-use crate::registry::Register;
+use crate::mem::Memory;
 use crate::utils::{iter::BufIter, token::Op};
 
 // Simple environment structure that holds the memory and registry
 // TODO: Stack
 #[derive(Debug, PartialEq)]
 pub struct Environment {
-    pub mem: [u8; 1024],
-
-    pub registry: Register,
+    pub mem: Memory,
 
     pub stdin: BufIter<u8>,
 
@@ -17,8 +15,7 @@ pub struct Environment {
 impl Environment {
     pub fn new(buf: &mut [u8]) -> Self {
         Self {
-            mem: [0_u8; 1024],
-            registry: Register::init(),
+            mem: Memory::init(1024, 20),
             stdin: BufIter::new(buf),
             parent_ast: None,
         }
