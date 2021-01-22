@@ -196,11 +196,13 @@ pub fn parse(ast: &[Op], matches: &ArgMatches<'_>) {
     };
 
     let mut env = Environment::new(v.as_mut_slice());
+    env.set_parent(ast);
     let mut ind = 0;
 
     while ind < ast.len() {
         if !run_op(&mut env, &ast, &mut ind).has_jmp() {
             ind += 1;
+            env.pos.0 += 1;
         }
     }
 
@@ -213,20 +215,24 @@ pub fn parse(ast: &[Op], matches: &ArgMatches<'_>) {
 fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status> {
     match &ast[*ind] {
         Op::Cmd(name, args) => {
+            if env.jump_point.len() > 0 {
+                env.jump_point.clear();
+            }
+            
             let shallow_ref: Vec<&Op> = args.iter().collect();
             run_cmd(env, ast, ind, &*name, &shallow_ref)
         }
 
         Op::Branch(_, body) => {
-            env.set_parent(&ast);
-            for mut i in 0..body.len() {
+            for mut i in env.pos.1..body.len() {
                 if run_op(env, &body, &mut i).has_jmp() {
-                    env.clear_parent();
                     *ind = i;
                     return bx!(true);
+                } else {
+                    env.pos.1 += 1;
                 }
             }
-            env.clear_parent();
+            
             bx!(false)
         }
 
@@ -348,6 +354,14 @@ fn modify_memory(env: &mut Environment, ast: &[Op], obj: &Op, val: &Op) {
     }
 }
 
+macro_rules! set_ind {
+    ($ind:ident, $env:ident, $val:expr) => {
+        *$ind = $val;
+        $env.jump_point.push($env.pos);
+        $env.pos = (*$ind, 0);
+    };
+}
+
 // Returns `true` if `ind` was modified, `false` otherwise
 fn run_cmd(
     env: &mut Environment,
@@ -388,7 +402,7 @@ fn run_cmd(
         }
 
         "jmp" => {
-            *ind = to_numeric(env, ast, args[0]);
+            set_ind!(ind, env, to_numeric(env, ast, args[0]));
             bx!(true)
         }
 
@@ -432,7 +446,7 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left == right {
-                *ind = to_numeric(env, ast, args[2]);
+                set_ind!(ind, env, to_numeric(env, ast, args[2]));
                 true
             } else {
                 false
@@ -443,7 +457,7 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left != right {
-                *ind = to_numeric(env, ast, args[2]);
+                set_ind!(ind, env, to_numeric(env, ast, args[2]));
                 true
             } else {
                 false
@@ -453,7 +467,7 @@ fn run_cmd(
         "jz" => {
             let check: i32 = to_numeric(env, ast, args[0]);
             bx!(if check == 0 {
-                *ind = to_numeric(env, ast, args[2]);
+                set_ind!(ind, env, to_numeric(env, ast, args[2]));
                 true
             } else {
                 false
@@ -464,7 +478,7 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left > right {
-                *ind = to_numeric(env, ast, args[2]);
+                set_ind!(ind, env, to_numeric(env, ast, args[2]));
                 true
             } else {
                 false
@@ -475,7 +489,7 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left >= right {
-                *ind = to_numeric(env, ast, args[2]);
+                set_ind!(ind, env, to_numeric(env, ast, args[2]));
                 true
             } else {
                 false
@@ -486,7 +500,7 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left < right {
-                *ind = to_numeric(env, ast, args[2]);
+                set_ind!(ind, env, to_numeric(env, ast, args[2]));
                 true
             } else {
                 false
@@ -497,7 +511,7 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left <= right {
-                *ind = to_numeric(env, ast, args[2]);
+                set_ind!(ind, env, to_numeric(env, ast, args[2]));
                 true
             } else {
                 false
@@ -536,6 +550,18 @@ fn run_cmd(
             Some(val) => i32::from(val),
             None => 0,
         }),
+
+        "ret" => {
+            if env.jump_point.len() > 0 {
+                let (left, right) = env.jump_point.pop().unwrap();
+                env.pos = (left, right + 1);
+                *ind = left;
+            } else {
+                panic!("Cannot return");
+            }
+
+            bx!(true)
+        }
 
         "hlt" => std::process::exit(to_numeric(env, ast, args[0])),
 

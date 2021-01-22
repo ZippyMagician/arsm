@@ -36,7 +36,8 @@ lazy_static! {
             "db" 2;
             "in" 0;
             "chr" 1;
-            "hlt" 1
+            "hlt" 1;
+            "ret" 0
         );
         m
     };

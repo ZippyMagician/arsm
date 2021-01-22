@@ -1,7 +1,7 @@
 use crate::mem::Memory;
 use crate::utils::{iter::BufIter, token::Op};
 
-// Simple environment structure that holds the memory and registry
+// Simple environment structure that holds the memory, stdin, and a few useful items
 // TODO: Stack
 #[derive(Debug, PartialEq)]
 pub struct Environment {
@@ -10,6 +10,10 @@ pub struct Environment {
     pub stdin: BufIter<u8>,
 
     parent_ast: Option<Vec<Op>>,
+
+    pub jump_point: Vec<(usize, usize)>,
+
+    pub pos: (usize, usize),
 }
 
 impl Environment {
@@ -18,6 +22,8 @@ impl Environment {
             mem: Memory::init(1024, 0),
             stdin: BufIter::new(buf),
             parent_ast: None,
+            jump_point: Vec::new(),
+            pos: (0, 0),
         }
     }
 
@@ -27,9 +33,5 @@ impl Environment {
 
     pub fn get_parent(&self) -> &Option<Vec<Op>> {
         &self.parent_ast
-    }
-
-    pub fn clear_parent(&mut self) {
-        self.parent_ast = None;
     }
 }

@@ -49,3 +49,4 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `in` -> Get next byte of STDIN or a null-byte (`0`) if none left
 * `chr <A>` -> Print A as a character instead of number
 * `hlt <A>` -> Terminates program with exit code A
+* `ret` -> Return to the point at which this jump was called from
