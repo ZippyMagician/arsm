@@ -358,12 +358,11 @@ fn modify_memory(env: &mut Environment, ast: &[Op], obj: &Op, val: &Op) {
     }
 }
 
-macro_rules! set_ind {
-    ($ind:ident, $env:ident, $val:expr) => {
-        *$ind = $val;
-        $env.jump_point.push($env.pos);
-        $env.pos = (*$ind, 0);
-    };
+#[inline]
+fn set_ind(ind: &mut usize, env: &mut Environment, val: usize) {
+    *ind = val;
+    env.jump_point.push(env.pos);
+    env.pos = (*ind, 0);
 }
 
 // Returns `true` if `ind` was modified, `false` otherwise
@@ -406,7 +405,8 @@ fn run_cmd(
         }
 
         "jmp" => {
-            set_ind!(ind, env, to_numeric(env, ast, args[0]));
+            let n = to_numeric(env, ast, args[0]);
+            set_ind(ind, env, n);
             bx!(true)
         }
 
@@ -450,7 +450,8 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left == right {
-                set_ind!(ind, env, to_numeric(env, ast, args[2]));
+                let n = to_numeric(env, ast, args[2]);
+                set_ind(ind, env, n);
                 true
             } else {
                 false
@@ -461,7 +462,8 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left != right {
-                set_ind!(ind, env, to_numeric(env, ast, args[2]));
+                let n = to_numeric(env, ast, args[2]);
+                set_ind(ind, env, n);
                 true
             } else {
                 false
@@ -471,7 +473,8 @@ fn run_cmd(
         "jz" => {
             let check: i32 = to_numeric(env, ast, args[0]);
             bx!(if check == 0 {
-                set_ind!(ind, env, to_numeric(env, ast, args[2]));
+                let n = to_numeric(env, ast, args[2]);
+                set_ind(ind, env, n);
                 true
             } else {
                 false
@@ -482,7 +485,8 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left > right {
-                set_ind!(ind, env, to_numeric(env, ast, args[2]));
+                let n = to_numeric(env, ast, args[2]);
+                set_ind(ind, env, n);
                 true
             } else {
                 false
@@ -493,7 +497,8 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left >= right {
-                set_ind!(ind, env, to_numeric(env, ast, args[2]));
+                let n = to_numeric(env, ast, args[2]);
+                set_ind(ind, env, n);
                 true
             } else {
                 false
@@ -504,7 +509,8 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left < right {
-                set_ind!(ind, env, to_numeric(env, ast, args[2]));
+                let n = to_numeric(env, ast, args[2]);
+                set_ind(ind, env, n);
                 true
             } else {
                 false
@@ -515,7 +521,8 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
             bx!(if left <= right {
-                set_ind!(ind, env, to_numeric(env, ast, args[2]));
+                let n = to_numeric(env, ast, args[2]);
+                set_ind(ind, env, n);
                 true
             } else {
                 false
