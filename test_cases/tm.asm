@@ -1,5 +1,6 @@
 mov eh in
-je eh 49 :loop
+cmp eh 49
+je :loop
 jmp :skip
 
 .loop

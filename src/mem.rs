@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::utils::consts::{OFFSET, U8_ALIGN};
+use crate::utils::consts::{OFFSET, REGISTRY_OFFSET, U8_ALIGN};
 use crate::utils::traits::*;
 
 use std::alloc::{alloc_zeroed, dealloc, Layout};
@@ -72,6 +72,34 @@ impl Memory {
     #[inline]
     pub fn memory_len(&self) -> usize {
         self.size - self.s_size - OFFSET
+    }
+}
+
+// FLAGS
+impl Memory {
+    // cmp flags (0, eq, g, l, unused, unused, unused)
+    #[inline]
+    pub fn flag_write_cmp(&mut self, ind: u8) {
+        let mask = 1 << ind;
+        let num = self.read(REGISTRY_OFFSET);
+
+        self.write(REGISTRY_OFFSET, mask | num);
+    }
+
+    #[inline]
+    pub fn flag_write_whole_cmp(&mut self, val: u8) {
+        self.write(REGISTRY_OFFSET, val);
+    }
+
+    #[inline]
+    pub fn flag_reset_cmp(&mut self) {
+        self.write(REGISTRY_OFFSET, 0);
+    }
+
+    #[inline]
+    pub fn flag_read_cmp(&self, ind: u8) -> bool {
+        let mask = 1 << ind;
+        self.read(REGISTRY_OFFSET) & mask != 0
     }
 }
 
@@ -310,5 +338,17 @@ mod mem_tests {
         env.r_write(&'e', &1342_i16);
         assert_eq!(env.s_pop_8(), Some(13));
         assert_eq!(env.r_read::<i16>(&'e'), 1342);
+    }
+
+    #[test]
+    fn test_flags() {
+        let mut env = Memory::init(20, 0);
+        env.flag_write_cmp(2);
+        env.flag_write_cmp(4);
+
+        assert!(!env.flag_read_cmp(0));
+        assert!(env.flag_read_cmp(4));
+        env.flag_reset_cmp();
+        assert!(!env.flag_read_cmp(2));
     }
 }

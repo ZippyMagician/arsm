@@ -21,13 +21,13 @@ lazy_static! {
             "dec" 1;
             "out" 1;
             "jmp" 1;
-            "je" 3;
-            "jne" 3;
-            "jl" 3;
-            "jle" 3;
-            "jg" 3;
-            "jge" 3;
-            "jz" 2;
+            "je" 1;
+            "jne" 1;
+            "jl" 1;
+            "jle" 1;
+            "jg" 1;
+            "jge" 1;
+            "jz" 1;
             "mul" 2;
             "div" 2;
             "add" 2;
@@ -37,7 +37,8 @@ lazy_static! {
             "in" 0;
             "chr" 1;
             "hlt" 1;
-            "ret" 0
+            "ret" 0;
+            "cmp" 2
         );
         m
     };
@@ -45,5 +46,6 @@ lazy_static! {
 
 // For `mem.rs`
 pub const U8_ALIGN: usize = std::mem::align_of::<u8>();
-// First 10 bytes are the registry, next 10 are reserved for future use
-pub const OFFSET: usize = 20;
+pub const REGISTRY_OFFSET: usize = 10;
+// First 10 bytes are the registry, 11th byte for the cmp flags, next 9 are reserved for future use
+pub const OFFSET: usize = REGISTRY_OFFSET + 10;

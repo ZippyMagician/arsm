@@ -1,6 +1,7 @@
 .main
     str "This is an error" 10
-    jz in :panic
+    cmp in 0
+    jz :panic
     jmp :skipanic
 .
 
@@ -10,7 +11,8 @@
 ..panicloop
   chr #[eh]
   inc eh
-  je db 0 10 eh :skipanic
+  cmp db 0 10 eh
+  je :skipanic
   jmp :panicloop
 ..skipanic
     hlt 0

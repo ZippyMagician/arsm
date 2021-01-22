@@ -446,11 +446,33 @@ fn run_cmd(
             bx!(false)
         }
 
-        "je" => {
+        "cmp" => {
+            env.mem.flag_reset_cmp();
+
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
-            bx!(if left == right {
-                let n = to_numeric(env, ast, args[2]);
+
+            let mut num = 0b00000000;
+            if left == right {
+                num |= 0b10;
+                if right == 0 {
+                    num |= 1
+                }
+            }
+            if left > right {
+                num |= 0b100
+            }
+            if left < right {
+                num |= 0b1000
+            }
+            env.mem.flag_write_whole_cmp(num);
+
+            bx!(false)
+        }
+
+        "je" => {
+            bx!(if env.mem.flag_read_cmp(1) {
+                let n = to_numeric(env, ast, args[0]);
                 set_ind(ind, env, n);
                 true
             } else {
@@ -459,9 +481,7 @@ fn run_cmd(
         }
 
         "jne" => {
-            let left: i32 = to_numeric(env, ast, args[0]);
-            let right: i32 = to_numeric(env, ast, args[1]);
-            bx!(if left != right {
+            bx!(if !env.mem.flag_read_cmp(1) {
                 let n = to_numeric(env, ast, args[2]);
                 set_ind(ind, env, n);
                 true
@@ -471,9 +491,8 @@ fn run_cmd(
         }
 
         "jz" => {
-            let check: i32 = to_numeric(env, ast, args[0]);
-            bx!(if check == 0 {
-                let n = to_numeric(env, ast, args[2]);
+            bx!(if env.mem.flag_read_cmp(0) {
+                let n = to_numeric(env, ast, args[0]);
                 set_ind(ind, env, n);
                 true
             } else {
@@ -482,10 +501,8 @@ fn run_cmd(
         }
 
         "jg" => {
-            let left: i32 = to_numeric(env, ast, args[0]);
-            let right: i32 = to_numeric(env, ast, args[1]);
-            bx!(if left > right {
-                let n = to_numeric(env, ast, args[2]);
+            bx!(if env.mem.flag_read_cmp(2) {
+                let n = to_numeric(env, ast, args[0]);
                 set_ind(ind, env, n);
                 true
             } else {
@@ -494,10 +511,8 @@ fn run_cmd(
         }
 
         "jge" => {
-            let left: i32 = to_numeric(env, ast, args[0]);
-            let right: i32 = to_numeric(env, ast, args[1]);
-            bx!(if left >= right {
-                let n = to_numeric(env, ast, args[2]);
+            bx!(if env.mem.flag_read_cmp(1) && env.mem.flag_read_cmp(2) {
+                let n = to_numeric(env, ast, args[0]);
                 set_ind(ind, env, n);
                 true
             } else {
@@ -506,10 +521,8 @@ fn run_cmd(
         }
 
         "jl" => {
-            let left: i32 = to_numeric(env, ast, args[0]);
-            let right: i32 = to_numeric(env, ast, args[1]);
-            bx!(if left < right {
-                let n = to_numeric(env, ast, args[2]);
+            bx!(if env.mem.flag_read_cmp(3) {
+                let n = to_numeric(env, ast, args[0]);
                 set_ind(ind, env, n);
                 true
             } else {
@@ -518,10 +531,8 @@ fn run_cmd(
         }
 
         "jle" => {
-            let left: i32 = to_numeric(env, ast, args[0]);
-            let right: i32 = to_numeric(env, ast, args[1]);
-            bx!(if left <= right {
-                let n = to_numeric(env, ast, args[2]);
+            bx!(if env.mem.flag_read_cmp(1) && env.mem.flag_read_cmp(3) {
+                let n = to_numeric(env, ast, args[0]);
                 set_ind(ind, env, n);
                 true
             } else {
