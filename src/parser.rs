@@ -218,7 +218,8 @@ pub fn parse(ast: &[Op], matches: &ArgMatches<'_>) {
 fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status> {
     match &ast[*ind] {
         Op::Cmd(name, args) => {
-            if env.jump_point.len() > 0 {
+            // If we are not in a branch, clear the jump_points for performance
+            if env.jump_point.len() > 0 && ast == env.get_parent().clone().unwrap() {
                 env.jump_point.clear();
             }
 
