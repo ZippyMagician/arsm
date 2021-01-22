@@ -452,7 +452,7 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
 
-            let mut num = 0b00000000;
+            let mut num = 0;
             if left == right {
                 num |= 0b10;
                 if right == 0 {
