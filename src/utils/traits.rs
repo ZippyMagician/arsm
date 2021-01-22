@@ -1,5 +1,7 @@
 use std::usize;
 
+// An extension of `num_traits::Num` trait that features some functions I use in the parser and memory ops.
+// Almost completely inlined because the functions are so small, this will greatly improve performance
 pub trait Num: num_traits::Num + num_traits::NumCast {
     fn get_bytes(&self) -> Vec<u8>;
 
@@ -7,31 +9,22 @@ pub trait Num: num_traits::Num + num_traits::NumCast {
     where
         Self: Sized;
 
+    #[inline]
     fn len() -> usize
     where
         Self: Sized,
     {
         0
     }
-
-    fn try_u8(&self) -> u8 {
-        unimplemented!();
-    }
-
-    fn try_i16(&self) -> i16 {
-        unimplemented!();
-    }
-
-    fn try_i32(&self) -> i32 {
-        unimplemented!();
-    }
 }
 
 impl Num for u8 {
+    #[inline]
     fn get_bytes(&self) -> Vec<u8> {
         vec![*self]
     }
 
+    #[inline]
     fn from_bytes(bytes: &[u8]) -> Self
     where
         Self: Sized,
@@ -39,10 +32,7 @@ impl Num for u8 {
         bytes[0]
     }
 
-    fn try_u8(&self) -> u8 {
-        *self
-    }
-
+    #[inline]
     fn len() -> usize
     where
         Self: Sized,
@@ -52,10 +42,12 @@ impl Num for u8 {
 }
 
 impl Num for i16 {
+    #[inline]
     fn get_bytes(&self) -> Vec<u8> {
         self.to_ne_bytes().into()
     }
 
+    #[inline]
     fn from_bytes(bytes: &[u8]) -> Self
     where
         Self: Sized,
@@ -63,10 +55,7 @@ impl Num for i16 {
         i16::from_ne_bytes([bytes[0], bytes[1]])
     }
 
-    fn try_i16(&self) -> i16 {
-        *self
-    }
-
+    #[inline]
     fn len() -> usize
     where
         Self: Sized,
@@ -76,10 +65,12 @@ impl Num for i16 {
 }
 
 impl Num for i32 {
+    #[inline]
     fn get_bytes(&self) -> Vec<u8> {
         self.to_ne_bytes().into()
     }
 
+    #[inline]
     fn from_bytes(bytes: &[u8]) -> Self
     where
         Self: Sized,
@@ -87,10 +78,7 @@ impl Num for i32 {
         i32::from_ne_bytes([bytes[0], bytes[1], bytes[2], bytes[3]])
     }
 
-    fn try_i32(&self) -> i32 {
-        *self
-    }
-
+    #[inline]
     fn len() -> usize
     where
         Self: Sized,
@@ -100,10 +88,12 @@ impl Num for i32 {
 }
 
 impl Num for usize {
+    #[inline]
     fn get_bytes(&self) -> Vec<u8> {
         self.to_ne_bytes().into()
     }
 
+    #[inline]
     fn from_bytes(_: &[u8]) -> Self
     where
         Self: Sized,
@@ -111,6 +101,7 @@ impl Num for usize {
         unimplemented!()
     }
 
+    #[inline]
     fn len() -> usize
     where
         Self: Sized,
@@ -174,30 +165,36 @@ pub trait Status {
 }
 
 impl Status for bool {
+    #[inline]
     fn has_jmp(&self) -> bool {
         *self
     }
 
+    #[inline]
     fn get_val(&self) -> i32 {
         0
     }
 }
 
 impl Status for i32 {
+    #[inline]
     fn has_jmp(&self) -> bool {
         false
     }
 
+    #[inline]
     fn get_val(&self) -> i32 {
         *self
     }
 }
 
 impl Status for (bool, i32) {
+    #[inline]
     fn has_jmp(&self) -> bool {
         self.0
     }
 
+    #[inline]
     fn get_val(&self) -> i32 {
         self.1
     }

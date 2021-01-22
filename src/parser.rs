@@ -6,6 +6,7 @@ use crate::bx;
 use crate::env::Environment;
 use crate::utils::{consts::*, token::*, traits::*};
 
+#[inline]
 fn flush(buf: &mut String, chr: char) {
     buf.clear();
     if !chr.is_whitespace() {
@@ -13,10 +14,12 @@ fn flush(buf: &mut String, chr: char) {
     }
 }
 
+#[inline]
 fn is_num(test: &str) -> bool {
     test.parse::<i32>().is_ok()
 }
 
+#[inline]
 fn is_register(test: &str) -> bool {
     test.ends_with(|chr| REGISTER_ENDINGS.contains(&chr))
         && test[..test.len() - 1]
@@ -218,7 +221,7 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
             if env.jump_point.len() > 0 {
                 env.jump_point.clear();
             }
-            
+
             let shallow_ref: Vec<&Op> = args.iter().collect();
             run_cmd(env, ast, ind, &*name, &shallow_ref)
         }

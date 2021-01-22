@@ -29,6 +29,7 @@ impl<T> BufIter<T> {
 impl<T> Iterator for BufIter<T> {
     type Item = T;
 
+    #[inline]
     fn next(&mut self) -> Option<T> {
         if self.c == 0 {
             None
