@@ -1,17 +1,21 @@
 const exec = require('child_process').exec;
 const fs = require('fs');
 
+const FILE_EXTENSION = ".asm";
+
 let map = {};
 
 let files = fs.readdirSync('test_cases/');
 for (file of files) {
-    if (!map[/(.+)\..+/g.exec(file)[1]]) map[/(.+)\..+/g.exec(file)[1]] = new Array(3);
-    if (file.endsWith('.arsm')) {
-        map[file.slice(0, file.length - 5)][0] = 'test_cases/' + file;
+    let ident = /(.+)\..+/g.exec(file)[1];
+
+    if (!map[ident]) map[ident] = new Array(3);
+    if (file.endsWith(FILE_EXTENSION)) {
+        map[ident][0] = 'test_cases/' + file;
     } else if (file.endsWith('.in')) {
-        map[file.slice(0, file.length - 3)][1] = fs.readFileSync('test_cases/' + file).toString();
+        map[ident][1] = fs.readFileSync('test_cases/' + file).toString();
     } else if (file.endsWith('.out')) {
-        map[file.slice(0, file.length - 4)][2] = fs.readFileSync('test_cases/' + file).toString();
+        map[ident][2] = fs.readFileSync('test_cases/' + file).toString();
     }
 }
 
