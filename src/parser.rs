@@ -219,7 +219,7 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
     match &ast[*ind] {
         Op::Cmd(name, args) => {
             // If we are not in a branch, clear the jump_points for performance
-            if env.jump_point.len() > 0 && ast == env.get_parent().clone().unwrap() {
+            if !env.jump_point.is_empty() && ast == env.get_parent().clone().unwrap() {
                 env.jump_point.clear();
             }
 
@@ -236,7 +236,7 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
                     env.pos.1 += 1;
                 }
             }
-            
+
             bx!(false)
         }
 
@@ -563,7 +563,7 @@ fn run_cmd(
         }),
 
         "ret" => {
-            if env.jump_point.len() > 0 {
+            if !env.jump_point.is_empty() {
                 let (left, right) = env.jump_point.pop().unwrap();
                 env.pos = (left, right + 1);
                 *ind = left;
