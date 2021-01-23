@@ -18,7 +18,7 @@ pub fn parse(ast: &[Op], matches: &ArgMatches<'_>) {
         Vec::new()
     };
 
-    let mut env = Environment::new(v.as_mut_slice());
+    let mut env = Environment::new(&mut v);
     env.set_parent(ast);
     let mut ind = 0;
 
@@ -81,7 +81,7 @@ fn to_numeric<T: Num>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
         }
 
         Op::Register(name) => {
-            let chrs = name.chars().collect::<Vec<char>>();
+            let chrs: Vec<char> = name.chars().collect();
             if name.ends_with('x') {
                 if name.len() == 3 {
                     num_traits::cast(env.mem.r_read::<i32>(&(chrs[0], chrs[1])))
@@ -107,7 +107,7 @@ fn to_numeric<T: Num>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
                         false
                     }
                 })
-                .unwrap(),
+                .unwrap_or_else(|| panic!("No matching branch for label {}", name)),
         ),
 
         Op::BinOp(_, _, _) => todo!("Math unimplemented"),
@@ -117,7 +117,7 @@ fn to_numeric<T: Num>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
         Op::Cmd(name, args) => {
             let mut dummy_ind = 0;
             let args: Vec<&Op> = args.iter().collect();
-            num_traits::cast(run_cmd(env, ast, &mut dummy_ind, &*name, args.as_slice()).get_val())
+            num_traits::cast(run_cmd(env, ast, &mut dummy_ind, &*name, &args).get_val())
         }
 
         _ => panic!("Invalid numeric literal: {:?}", obj),

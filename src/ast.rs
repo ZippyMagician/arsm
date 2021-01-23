@@ -1,8 +1,8 @@
 use std::iter::Peekable;
 
 use crate::bx;
-use crate::utils::token::*;
 use crate::utils::consts::COMMANDS;
+use crate::utils::token::*;
 
 pub fn construct_tree(stream: &[Node]) -> Vec<Op> {
     let mut res = Vec::new();
@@ -19,7 +19,7 @@ pub fn construct_tree(stream: &[Node]) -> Vec<Op> {
     res
 }
 
-pub fn current_tok(stream: &mut Peekable<std::slice::Iter<'_, Node>>, cur: &Node) -> Op {
+pub fn current_tok<'a>(stream: &mut Peekable<impl Iterator<Item = &'a Node>>, cur: &Node) -> Op {
     match *cur {
         Node::Keyword(ref name) => {
             if let Some(&count) = COMMANDS.get(name) {
@@ -56,10 +56,9 @@ pub fn current_tok(stream: &mut Peekable<std::slice::Iter<'_, Node>>, cur: &Node
                     let tok = stream.next();
                     let res = bx!(current_tok(
                         stream,
-                        tok.unwrap_or_else(|| {
-                            panic!("Invalid termination of a memory identifier: Missing body")
-                        }),
+                        tok.expect("Invalid termination of a memory identifier: Missing body"),
                     ));
+
                     if let Some(Node::Punctuation(']')) = stream.next() {
                         Op::Memory(*chr, res)
                     } else {
@@ -75,24 +74,26 @@ pub fn current_tok(stream: &mut Peekable<std::slice::Iter<'_, Node>>, cur: &Node
             }
         }
 
-        Node::Numeric(ref val) => Op::Numeric(*val),
+        Node::Numeric(val) => Op::Numeric(val),
 
         Node::String(ref str) => Op::String(str.clone()),
 
         Node::Branch(ref name) => {
+            let name = name.clone();
+
             if name.starts_with(':') {
-                Op::Label(name.clone())
+                Op::Label(name)
             } else {
                 let mut v = Vec::new();
                 while let Some(node) = stream.next() {
-                    if Node::Branch(".".to_string()) == *node {
+                    if Node::Branch(String::from('.')) == *node {
                         break;
                     }
 
                     v.push(current_tok(stream, node));
                 }
 
-                Op::Branch(name.clone(), v)
+                Op::Branch(name, v)
             }
         }
 

@@ -16,11 +16,11 @@ extern crate clap;
 #[macro_use]
 extern crate lazy_static;
 
+mod ast;
 mod env;
+mod lexer;
 mod mem;
 mod parser;
-mod lexer;
-mod ast;
 #[macro_use]
 mod utils;
 
