@@ -21,10 +21,12 @@ A branch will be executed on the programs first run-through. For example:
     out eax
 ```
 Will print 13, even though no specific call to `.main` was made
-### Registries
-There are 5 16-bit registries: *a*, *b*, *c*, *d*, and *e*. To call a single registry, attach an *x* onto the end. To join two registries together (making 32-bits of data), simply put two separate registry names before the *x*. To only access half of the 16-bit registries, use *h* or *l* (upper or lower respectively).
 ### Memory
-Memory is accessed by placing some expression that evaluates down to a number inside `[]`. Memory is 1024 slots of 8-bits, but similarly to registries can be joined together. To accomplish this, you prefix the `[]` with an identifier. *#* marks a single cell (8-bits), *$* marks two cells (16-bits), and *@* marks four cells (32-bits).
+![The memory layout](https://raw.githubusercontent.com/ZippyMagician/arsm/master/etc/arsm_memory.png)
+#### Registry
+There are 5 16-bit registries: *a*, *b*, *c*, *d*, and *e*. To call a single registry, attach an *x* onto the end. To join two registries together (making 32-bits of data), simply put two separate registry names before the *x*. To only access half of the 16-bit registries, use *h* or *l* (upper or lower respectively).
+#### Ram
+Memory is accessed by placing some expression that evaluates down to a number inside `[]`. Memory is seperated into 8-bit cells, which similar to the registry can be joined together. To accomplish this, you prefix the `[]` with an identifier. *#* marks a single cell (8-bits), *$* marks two cells (16-bits), and *@* marks four cells (32-bits).
 ### Characters
 A character literal is denoted by a `'` followed by any ascii character. This will yield the integer value of that character, for use in the program.
 ## Commands
