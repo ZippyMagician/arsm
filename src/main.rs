@@ -19,6 +19,8 @@ extern crate lazy_static;
 mod env;
 mod mem;
 mod parser;
+mod lexer;
+mod ast;
 #[macro_use]
 mod utils;
 
@@ -60,7 +62,7 @@ fn main() {
 
 #[inline]
 fn run_program(program: &str, matches: &ArgMatches<'_>) {
-    let lexed = parser::lex(program);
-    let tree = parser::construct_tree(&lexed);
+    let lexed = lexer::lex(program);
+    let tree = ast::construct_tree(&lexed);
     parser::parse(&tree, matches);
 }
