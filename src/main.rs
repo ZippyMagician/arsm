@@ -19,7 +19,6 @@ extern crate lazy_static;
 mod ast;
 mod env;
 mod lexer;
-mod mem;
 mod parser;
 #[macro_use]
 mod utils;

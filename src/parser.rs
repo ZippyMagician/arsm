@@ -52,9 +52,9 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
                 if run_op(env, &body, &mut i).has_jmp() {
                     *ind = i;
                     return bx!(true);
-                } else {
-                    env.pos.1 += 1;
                 }
+
+                env.pos.1 += 1;
             }
 
             bx!(false)

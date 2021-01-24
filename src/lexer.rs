@@ -12,15 +12,13 @@ fn flush(buf: &mut String, chr: char) {
 pub fn lex(program: &str) -> Vec<Node> {
     let mut prg = program.to_string();
     prg.push('\n');
-    let sep = prg.chars().collect::<Vec<char>>();
+    let mut sep = prg.chars();
 
     // The number of spaces will give a rough estimate of how large the returned `Vec` will be, improving performance
     let mut res = Vec::with_capacity(program.matches(' ').count());
     let mut buf = String::new();
-    let mut i = 0;
 
-    while i < sep.len() {
-        let chr = sep[i];
+    while let Some(chr) = sep.next() {
         if buf.parse::<i32>().is_ok() {
             buf.push(chr);
             if buf.parse::<i32>().is_err() {
@@ -43,9 +41,17 @@ pub fn lex(program: &str) -> Vec<Node> {
             flush(&mut buf, chr);
         } else if buf == "\"" {
             buf.clear();
-            while i < sep.len() && sep[i] != '"' {
-                buf.push(sep[i]);
-                i += 1;
+            buf.push(chr);
+            // An alternative would be `buf.push_str(sep.take_while(|&a| a != '"').collect::<String>())`,
+            // but that leads to errors with mutable borrowing. This is the next best thing.
+            // Also, turns out clippy errors here even though using `for str_chr in sep` won't work
+            #[allow(clippy::while_let_on_iterator)]
+            while let Some(str_chr) = sep.next() {
+                if str_chr == '"' {
+                    break;
+                }
+
+                buf.push(str_chr);
             }
 
             res.push(Node::String(buf.clone()));
@@ -54,11 +60,9 @@ pub fn lex(program: &str) -> Vec<Node> {
             res.push(Node::Char(chr));
             buf.clear();
         } else if !chr.is_ascii_alphabetic() {
-            if buf.ends_with(|chr| REGISTER_ENDINGS.contains(&chr))
-                && buf[..buf.len() - 1]
-                    .chars()
-                    .all(|chr| REGISTERS.contains(&chr))
-            {
+            // Note: There is an edge case where this will not work, but as it is simpler then before and will
+            // most likely never break, I'd rather have it in this state. https://github.com/ZippyMagician/arsm/blob/814fb4e9bd302a4f985396fa63ea27194177bb9d/src/lexer.rs#L57
+            if buf.ends_with(REGISTER_ENDINGS) && buf.starts_with(REGISTERS) {
                 res.push(Node::Register(buf.clone()));
             } else if !buf.is_empty() {
                 res.push(Node::Keyword(buf.clone()));
@@ -68,8 +72,6 @@ pub fn lex(program: &str) -> Vec<Node> {
         } else {
             buf.push(chr);
         }
-
-        i += 1;
     }
 
     res
@@ -95,6 +97,19 @@ mod lex_tests {
                 Node::Numeric(13),
                 Node::Punctuation('@'),
                 Node::Punctuation('+')
+            ]
+        );
+    }
+
+    #[test]
+    fn test_strings() {
+        assert_eq!(
+            lex("\"Hello\" eh + 4"),
+            vec![
+                Node::String("Hello".to_string()),
+                Node::Register("eh".to_string()),
+                Node::Punctuation('+'),
+                Node::Numeric(4)
             ]
         );
     }

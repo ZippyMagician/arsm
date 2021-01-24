@@ -1,4 +1,4 @@
-use crate::mem::Memory;
+use crate::utils::mem::Memory;
 use crate::utils::{iter::BufIter, token::Op};
 
 // Simple environment structure that holds the memory, stdin, and a few useful items

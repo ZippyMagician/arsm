@@ -1,5 +1,6 @@
 pub mod consts;
 pub mod iter;
+pub mod mem;
 pub mod token;
 pub mod traits;
 

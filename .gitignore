@@ -1,3 +1,7 @@
+# Cargo files
 /target
 Cargo.lock
+
+# Some files I use for testing
 /debug
+*.tmp
