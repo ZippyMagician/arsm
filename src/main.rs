@@ -29,7 +29,7 @@ use clap::ArgMatches;
 
 fn main() {
     let matches = clap_app!(arsm =>
-        (version: "0.2")
+        (version: "0.2.1")
         (author: "Joshua B. <zippymagician1@gmail.com>")
         (about: "A toy assembly flavor written in rust")
         (@arg INPUT: +required "The input file to be run")
