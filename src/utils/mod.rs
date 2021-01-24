@@ -7,7 +7,7 @@ pub mod traits;
 // I use Box::new a lot, so this makes it shorter
 #[macro_export]
 macro_rules! bx {
-    ($value:expr) => {
-        Box::new($value)
-    };
+	($value:expr) => {
+		Box::new($value)
+	};
 }
