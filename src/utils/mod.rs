@@ -40,7 +40,7 @@ impl PyGuard {
 
         let dict = [("stk", old_stk)].into_py_dict(py);
 
-        let prog = format!("{}(\"{}\")", self::consts::PYTHON_HEAD, code);
+        let prog = format!("{}(\"{}\")", self::consts::PYTHON_HEAD, code.trim().escape_default());
 
         py.run(&*prog, None, Some(dict)).unwrap_or_else(|e| {
             e.print_and_set_sys_last_vars(py);
