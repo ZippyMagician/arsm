@@ -1,7 +1,7 @@
 // There are some unused functions that will be used eventually
 #![allow(dead_code)]
 
-use std::alloc::{alloc_zeroed, dealloc, Layout};
+use std::{alloc::{alloc_zeroed, dealloc, Layout}, ops::Range};
 use std::{fmt, ptr};
 
 use super::consts::{OFFSET, REGISTRY_OFFSET, U8_ALIGN};
@@ -10,9 +10,9 @@ use super::traits::*;
 #[derive(PartialEq)]
 pub struct Memory {
     mem: *mut u8,
-    size: usize,
-    s_size: usize,
-    s_len: usize,
+    pub size: usize,
+    pub s_size: usize,
+    pub s_len: usize,
 }
 
 // GENERAL PURPOSE
@@ -73,6 +73,12 @@ impl Memory {
     #[inline]
     pub fn memory_len(&self) -> usize {
         self.size - self.s_size - OFFSET
+    }
+
+    #[inline]
+    // Safety: Range must be ascending and fit within 0..=N, where N is the size of Memory
+    pub unsafe fn read_range(&self, range: Range<usize>) -> &[u8] {
+        std::slice::from_raw_parts(self.mem.add(range.start), range.end - range.start)
     }
 }
 

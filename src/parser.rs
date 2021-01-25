@@ -61,7 +61,7 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
 
         #[cfg(feature = "inline-python")]
         Op::InlinePy(code) => {
-            bx!(env.py.run_python(code))
+            bx!(env.py.run_python(env, code))
         }
 
         _ => panic!("Invalid top-level op: {:?}", ast[*ind]),
@@ -152,7 +152,7 @@ fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -> T 
         }
 
         #[cfg(feature = "inline-python")]
-        Op::InlinePy(code) => num_traits::cast(env.py.run_python(code)),
+        Op::InlinePy(code) => num_traits::cast(env.py.run_python(env, code)),
 
         _ => panic!("Invalid numeric literal: {:?}", obj),
     }
