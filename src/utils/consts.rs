@@ -41,7 +41,14 @@ lazy_static! {
             "cmp" 2;
             "stk" 1;
             "psh" 2;
-            "pop" 1
+            "pop" 1;
+            "ceq" 2;
+            "cg" 2;
+            "cge" 2;
+            "cl" 2;
+            "cle" 2;
+            "cne" 2;
+            "cz" 1
         );
         m
     };

@@ -96,7 +96,7 @@ impl Memory {
 
 // FLAGS
 impl Memory {
-    // cmp flags (0, eq, g, l, unused, unused, unused)
+    // cmp flags (generic, eq, g, l, unused, unused, unused)
     #[inline]
     pub fn flag_write_cmp(&mut self, ind: u8) {
         let mask = 1 << ind;
@@ -113,6 +113,14 @@ impl Memory {
     #[inline]
     pub fn flag_reset_cmp(&mut self) {
         self.write(REGISTRY_OFFSET, 0);
+    }
+
+    #[inline]
+    pub fn flag_nreset_cmp(&mut self, ind: u8) {
+        let mask = 255 ^ (1 << ind);
+        let num = self.read(REGISTRY_OFFSET);
+
+        self.write(REGISTRY_OFFSET, mask & num);
     }
 
     #[inline]

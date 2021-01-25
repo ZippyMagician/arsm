@@ -244,6 +244,23 @@ fn set_ind(ind: &mut usize, env: &mut Environment, val: usize) {
     env.pos = (*ind, 0);
 }
 
+#[inline]
+pub fn check_cmp<T>(env: &mut Environment, ast: &[Op], args: &[&Op], f: T) -> Box<dyn Status>
+where
+    T: FnOnce(i32, i32) -> bool
+{
+    let left: i32 = to_numeric(env, ast, args[0]);
+    let right = to_numeric(env, ast, args[1]);
+
+    if f(left, right) {
+        env.mem.flag_write_cmp(0);
+    } else {
+        env.mem.flag_nreset_cmp(0);
+    }
+
+    bx!(false)
+}
+
 // Returns `true` if `ind` was modified, `false` otherwise
 fn run_cmd(
     env: &mut Environment,
@@ -331,12 +348,9 @@ fn run_cmd(
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
 
-            let mut num = 0;
+            let mut num = if env.mem.flag_read_cmp(0) { 1 } else { 0 };
             if left == right {
                 num |= 0b10;
-                if right == 0 {
-                    num |= 1
-                }
             }
             if left > right {
                 num |= 0b100
@@ -417,6 +431,28 @@ fn run_cmd(
             } else {
                 false
             })
+        }
+
+        "ceq" => check_cmp(env, ast, args, |l, r| l == r),
+
+        "cne" => check_cmp(env, ast, args, |l, r| l != r),
+
+        "cl" => check_cmp(env, ast, args, |l, r| l < r),
+
+        "cle" => check_cmp(env, ast, args, |l, r| l <= r),
+
+        "cg" => check_cmp(env, ast, args, |l, r| l > r),
+    
+        "cge" => check_cmp(env, ast, args, |l, r| l >= r),
+
+        "cz" => {
+            if to_numeric::<i32>(env, ast, args[0]) == 0 {
+                env.mem.flag_write_cmp(0);
+            } else {
+                env.mem.flag_nreset_cmp(0);
+            }
+
+            bx!(false)
         }
 
         "str" => match args[0] {

@@ -34,7 +34,7 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `inc <A>` -> Increment A
 * `dec <A>` -> Decrement A
 * `out <A>` -> Print A with no newline
-* `cmp <A> <B>` -> Compares A to B and sets flags depending on the result
+* `cmp <A> <B>` -> Compares A to B and sets comparison flags depending on the result
 * `jmp <A>` -> Goto the branch entitled A (note: A is a **label**, not a **branch**)
 * `je <C>` -> Goto branch C if equal
 * `jne <C>` -> Goto branch C if not equal
@@ -56,6 +56,13 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `stk <A>` -> Resizes stack to size A. Defaults to 0
 * `psh <A> <B>` -> Pushes A byte number B to stack
 * `pop <A>` -> Pops N bytes (enough to fill A) and move to A.
+* `ceq <A> <B>` -> Sets conditional flag if A == B
+* `cz <A>` -> Sets conditional flag if A is 0
+* `cne <A> <B>` -> Sets conditional flag if A != B
+* `cg <A> <B>` -> Sets conditional flag if A > B
+* `cge <A> <B>` -> Sets conditional flag if A >= B
+* `cl <A> <B>` -> Sets conditional flag if A < B
+* `cle <A> <B>` -> Sets conditional flag if A <= B
 ## Inline Python
 Inline Python supports a few custom functions + variables to manipulate and make use of
 | Name | Type | Description |
