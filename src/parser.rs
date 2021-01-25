@@ -61,7 +61,18 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
 
         #[cfg(feature = "inline-python")]
         Op::InlinePy(code) => {
-            bx!(env.py.run_python(env, code))
+            let (new_stk, _) = env.py.run_python(env, code);
+            // Update the stack
+            if let Some(new_stk) = new_stk {
+                env.mem.write_range(
+                    crate::utils::consts::OFFSET..env.mem.s_size + crate::utils::consts::OFFSET,
+                    &new_stk,
+                );
+                env.mem.s_len = new_stk.len();
+                env.mem.s_size = env.mem.s_len.max(env.mem.s_size);
+            }
+
+            bx!(false)
         }
 
         _ => panic!("Invalid top-level op: {:?}", ast[*ind]),
@@ -152,7 +163,19 @@ fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -> T 
         }
 
         #[cfg(feature = "inline-python")]
-        Op::InlinePy(code) => num_traits::cast(env.py.run_python(env, code)),
+        Op::InlinePy(code) => {
+            let (new_stk, res) = env.py.run_python(env, code);
+            // Update the stack
+            if let Some(new_stk) = new_stk {
+                env.mem.write_range(
+                    crate::utils::consts::OFFSET..env.mem.s_size + crate::utils::consts::OFFSET,
+                    &new_stk,
+                );
+                env.mem.s_len = new_stk.len();
+                env.mem.s_size = env.mem.s_len.max(env.mem.s_size);
+            }
+            num_traits::cast(res)
+        }
 
         _ => panic!("Invalid numeric literal: {:?}", obj),
     }
@@ -347,8 +370,8 @@ fn run_cmd(
         }
 
         "jz" => {
-            bx!(if env.mem.flag_read_cmp(0) {
-                let n = to_numeric(env, ast, args[0]);
+            bx!(if to_numeric::<i32>(env, ast, args[0]) == 0 {
+                let n = to_numeric(env, ast, args[1]);
                 set_ind(ind, env, n);
                 true
             } else {
@@ -467,7 +490,12 @@ fn run_cmd(
         "ret" => {
             if !env.jump_point.is_empty() {
                 let (left, right) = env.jump_point.pop().unwrap();
-                env.pos = (left, right + 1);
+                // If it a top-level call, return to the next bit of the top-level. Otherwise, return to the next bit of the branch
+                if let Op::Branch(_, _) = env.get_parent().as_ref().unwrap()[left] {
+                    env.pos = (left, right + 1);
+                } else {
+                    env.pos = (left + 1, right);
+                }
                 *ind = left;
             } else {
                 panic!("Cannot return");

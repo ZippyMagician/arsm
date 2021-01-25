@@ -1,7 +1,6 @@
 .main
     str "This is an error" 10
-    cmp in 0
-    jz :panic
+    jz in :panic
     jmp :skipanic
 .
 

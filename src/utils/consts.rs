@@ -27,7 +27,7 @@ lazy_static! {
             "jle" 1;
             "jg" 1;
             "jge" 1;
-            "jz" 1;
+            "jz" 2;
             "mul" 2;
             "div" 2;
             "add" 2;
@@ -53,3 +53,10 @@ pub const REGISTRY_OFFSET: usize = 10;
 // First 10 bytes are the registry, 11th byte for the cmp flags, next 9 are
 // reserved for future use
 pub const OFFSET: usize = REGISTRY_OFFSET + 10;
+
+// Python backend. Used by `utils/mod.rs`
+#[cfg(feature = "inline-python")]
+pub const PYTHON_HEAD: &'static str = r#"
+fromBytes = lambda n: int.from_bytes(n, signed=True, byteorder=__import__('sys').byteorder)
+
+ret = eval"#;

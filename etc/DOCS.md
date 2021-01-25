@@ -38,7 +38,7 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `jmp <A>` -> Goto the branch entitled A (note: A is a **label**, not a **branch**)
 * `je <C>` -> Goto branch C if equal
 * `jne <C>` -> Goto branch C if not equal
-* `jz <B>` -> Goto branch B if zero
+* `jz <A> <B>` -> Goto branch B if A is zero
 * `jg <C>` -> Goto branch C if greater than
 * `jge <C>` -> Goto branch C if greater than or equal to
 * `jl <C>` -> Goto branch C if less than
@@ -56,3 +56,9 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `stk <A>` -> Resizes stack to size A. Defaults to 0
 * `psh <A> <B>` -> Pushes A byte number B to stack
 * `pop <A>` -> Pops N bytes (enough to fill A) and move to A.
+## Inline Python
+Inline Python supports a few custom functions + variables to manipulate and make use of
+| Name | Type | Description |
+| :--: | :--: | :---------: |
+| `fromBytes` | func | Converts list of `u8` bytes to single, signed integer. Useful for joining sections of the stack |
+| `stk` | var | The current stack stored in memory. Can be modified. WARNING: EXCEEDING THE BOUNDS OF THE STACK **WILL NOT** ERROR, AND MAY LEAD TO SOME DATA BEING LOST |
