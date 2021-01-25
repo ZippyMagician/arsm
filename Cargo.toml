@@ -8,8 +8,16 @@ edition = "2018"
 default = []
 
 # If you enable this with `--feature inline-python`, you can put inline python code into the assembly files
-# TODO: allow reading from stack in inline python
 inline-python = [ "pyo3" ]
+
+# Optimizations for the release mode
+[profile.release]
+opt-level = 3
+debug = false
+lto = true
+codegen-units = 1
+panic = 'abort'
+overflow-checks = false
 
 [[bin]]
 bench = false
