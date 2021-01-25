@@ -4,6 +4,13 @@ version = "0.2.1"
 authors = ["Joshua B. <zippymagician1@gmail.com>"]
 edition = "2018"
 
+[features]
+default = []
+
+# If you enable this with `--feature inline-python`, you can put inline python code into the assembly files
+# FIXME: Linking to a Python3 DLL currently does not work.
+inline-python = [ "pyo3" ]
+
 [[bin]]
 bench = false
 path = "src/main.rs"
@@ -13,3 +20,5 @@ name = "arsm"
 clap = "2.33.3"
 lazy_static = "1.4.0"
 num-traits = "0.2"
+
+pyo3 = { version = "0.13.1", features = ["auto-initialize", "extension-module"], optional = true }

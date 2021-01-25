@@ -1,6 +1,5 @@
 # Requires nightly mode, as some of these options are unstable
 
 condense_wildcard_suffixes = true
-hard_tabs = true
 group_imports = "StdExternalCrate"
 use_field_init_shorthand = true

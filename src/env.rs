@@ -3,34 +3,34 @@ use crate::utils::{iter::BufIter, mem::Memory, token::Op};
 // Simple environment structure that holds the memory, stdin, and a few useful items
 #[derive(Debug, PartialEq)]
 pub struct Environment {
-	// TODO: Stack
-	pub mem: Memory,
+    // TODO: Stack
+    pub mem: Memory,
 
-	pub stdin: BufIter<u8>,
+    pub stdin: BufIter<u8>,
 
-	parent_ast: Option<Vec<Op>>,
+    parent_ast: Option<Vec<Op>>,
 
-	pub jump_point: Vec<(usize, usize)>,
+    pub jump_point: Vec<(usize, usize)>,
 
-	pub pos: (usize, usize),
+    pub pos: (usize, usize),
 }
 
 impl Environment {
-	pub fn new(buf: &mut [u8]) -> Self {
-		Self {
-			mem: Memory::init(1024, 0),
-			stdin: BufIter::new(buf),
-			parent_ast: None,
-			jump_point: Vec::new(),
-			pos: (0, 0),
-		}
-	}
+    pub fn new(buf: &mut [u8]) -> Self {
+        Self {
+            mem: Memory::init(1024, 0),
+            stdin: BufIter::new(buf),
+            parent_ast: None,
+            jump_point: Vec::new(),
+            pos: (0, 0),
+        }
+    }
 
-	pub fn set_parent(&mut self, ast: &[Op]) {
-		self.parent_ast = Some(ast.to_owned());
-	}
+    pub fn set_parent(&mut self, ast: &[Op]) {
+        self.parent_ast = Some(ast.to_owned());
+    }
 
-	pub fn get_parent(&self) -> &Option<Vec<Op>> {
-		&self.parent_ast
-	}
+    pub fn get_parent(&self) -> &Option<Vec<Op>> {
+        &self.parent_ast
+    }
 }

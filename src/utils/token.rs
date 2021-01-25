@@ -1,41 +1,47 @@
 #[derive(Debug, PartialEq, Clone)]
 pub enum Node {
-	Keyword(String),
+    Keyword(String),
 
-	Numeric(i32),
+    Numeric(i32),
 
-	String(String),
+    String(String),
 
-	Branch(String),
+    Branch(String),
 
-	Register(String),
+    Register(String),
 
-	Punctuation(char),
+    Punctuation(char),
 
-	Char(char),
+    Char(char),
+
+    #[cfg(feature = "inline-python")]
+    InlinePy(String),
 }
 
 #[derive(Debug, PartialEq, Clone)]
 #[allow(dead_code)]
 pub enum Op {
-	// TODO: Implement binary operators
-	BinOp(char, Box<Op>, Box<Op>),
+    // TODO: Implement binary operators
+    BinOp(char, Box<Op>, Box<Op>),
 
-	Cmd(String, Vec<Op>),
+    Cmd(String, Vec<Op>),
 
-	Branch(String, Vec<Op>),
+    Branch(String, Vec<Op>),
 
-	Label(String),
+    Label(String),
 
-	Memory(char, Box<Op>),
+    Memory(char, Box<Op>),
 
-	Register(String),
+    Register(String),
 
-	Numeric(i32),
+    Numeric(i32),
 
-	String(String),
+    String(String),
 
-	Char(char),
+    Char(char),
 
-	Empty,
+    #[cfg(feature = "inline-python")]
+    InlinePy(String),
+
+    Empty,
 }
