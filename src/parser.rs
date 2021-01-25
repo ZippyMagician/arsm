@@ -2,8 +2,6 @@ use clap::ArgMatches;
 
 use crate::bx;
 use crate::env::Environment;
-#[cfg(feature = "inline-python")]
-use crate::utils::run_python;
 use crate::utils::{token::Op, traits::*};
 
 pub fn parse(ast: &[Op], matches: &ArgMatches<'_>) {
@@ -63,8 +61,7 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
 
         #[cfg(feature = "inline-python")]
         Op::InlinePy(code) => {
-            run_python(code);
-            bx!(false)
+            bx!(env.py.run_python(code))
         }
 
         _ => panic!("Invalid top-level op: {:?}", ast[*ind]),
@@ -72,7 +69,7 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
 }
 
 // Converts op to a numeric value
-fn to_numeric<T: Num>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
+fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
     match obj {
         Op::Numeric(val) => num_traits::cast(*val),
 
@@ -129,8 +126,7 @@ fn to_numeric<T: Num>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
 
         #[cfg(feature = "inline-python")]
         Op::InlinePy(code) => {
-            run_python(code);
-            num_traits::cast(0_i32)
+            num_traits::cast(env.py.run_python(code))
         }
 
         _ => panic!("Invalid numeric literal: {:?}", obj),

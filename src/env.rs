@@ -1,7 +1,10 @@
+use std::fmt::{self, Debug, Formatter};
+
+#[cfg(feature = "inline-python")]
+use crate::utils::PyGuard;
 use crate::utils::{iter::BufIter, mem::Memory, token::Op};
 
 // Simple environment structure that holds the memory, stdin, and a few useful items
-#[derive(Debug, PartialEq)]
 pub struct Environment {
     // TODO: Stack
     pub mem: Memory,
@@ -13,6 +16,9 @@ pub struct Environment {
     pub jump_point: Vec<(usize, usize)>,
 
     pub pos: (usize, usize),
+
+    #[cfg(feature = "inline-python")]
+    pub py: PyGuard,
 }
 
 impl Environment {
@@ -23,6 +29,8 @@ impl Environment {
             parent_ast: None,
             jump_point: Vec::new(),
             pos: (0, 0),
+            #[cfg(feature = "inline-python")]
+            py: PyGuard::new(),
         }
     }
 
@@ -32,5 +40,14 @@ impl Environment {
 
     pub fn get_parent(&self) -> &Option<Vec<Op>> {
         &self.parent_ast
+    }
+}
+
+impl Debug for Environment {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Environment")
+            .field("mem", &self.mem)
+            .field("stdin", &self.stdin)
+            .finish()
     }
 }

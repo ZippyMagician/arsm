@@ -15,18 +15,28 @@ macro_rules! bx {
     };
 }
 
-// Proof of concept. Once I fix linking, update this to return the value, and take in the memory's registers
 #[cfg(feature = "inline-python")]
-pub fn run_python(code: &str) {
-    Python::with_gil(|py| {
-        (|| -> PyResult<()> {
-            let res: String = py.eval(code, None, None)?.extract::<String>()?;
-            println!("Result: {}", res);
-            Ok(())
-        })()
-        .map_err(|e| {
-            e.print_and_set_sys_last_vars(py);
-        })
-    })
-    .expect("Could not create python instance");
+pub struct PyGuard {
+    guard: GILGuard,
+}
+
+#[cfg(feature = "inline-python")]
+impl PyGuard {
+    pub fn new() -> Self {
+        Self {
+            guard: Python::acquire_gil(),
+        }
+    }
+
+    #[inline]
+    pub fn run_python(&self, code: &str) -> i32 {
+        let py = self.guard.python();
+        py.eval(code, None, None)
+            .unwrap_or_else(|e| {
+                e.print_and_set_sys_last_vars(py);
+                std::process::exit(1)
+            })
+            .extract()
+            .unwrap_or_default()
+    }
 }

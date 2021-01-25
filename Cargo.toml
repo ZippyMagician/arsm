@@ -8,7 +8,7 @@ edition = "2018"
 default = []
 
 # If you enable this with `--feature inline-python`, you can put inline python code into the assembly files
-# FIXME: Linking to a Python3 DLL currently does not work.
+# TODO: allow reading from stack in inline python
 inline-python = [ "pyo3" ]
 
 [[bin]]

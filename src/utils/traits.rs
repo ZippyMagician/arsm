@@ -1,6 +1,7 @@
 // An extension of `num_traits::Num` trait that features some functions I use in
 // the parser and memory ops. Almost completely inlined because the functions
 // are so small, this will greatly improve performance
+
 pub trait Num: num_traits::Num + num_traits::NumCast {
     fn get_bytes(&self) -> Vec<u8>;
 
