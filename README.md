@@ -5,9 +5,12 @@ A toy version of Assembly, implemented in Rust.
 Mostly designed for fun, this flavour of Assembly was made for Rust specifically. See `/etc/DOCS.md` for a guide to use the language.
 
 ## Installation
-To build from source, first clone this repository into a local directory. Next, run `cargo install --path path/to/repository`.
-
-Please make sure you have [Rust](https://rust-lang.org) installed on your system before running this command. Once installed, you can use the above command and then proceed to use arsm through the cli.
+First, make sure you have [Rust](https://rust-lang.org) installed on your system. Then clone this repository into a local directory.
+You have two options: installing normal arsm, or arsm with inline python support.
+### Normal
+run `cargo install --path path/to/repository`.
+### Inline Python
+Make sure you have [Python3](https://python.org) installed on your system. Then, run `cargo install --features inline-python --path path/to/repository
 ## Testing
 Use the command `node test` to test every case in `./test_cases`. A new case called `N` can be created by:
  1. Creating `N.asm`, which is the program

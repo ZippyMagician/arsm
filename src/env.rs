@@ -6,7 +6,6 @@ use crate::utils::{iter::BufIter, mem::Memory, token::Op};
 
 // Simple environment structure that holds the memory, stdin, and a few useful items
 pub struct Environment {
-    // TODO: Stack
     pub mem: Memory,
 
     pub stdin: BufIter<u8>,

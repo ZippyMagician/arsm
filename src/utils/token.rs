@@ -43,5 +43,8 @@ pub enum Op {
     #[cfg(feature = "inline-python")]
     InlinePy(String),
 
+    // Emtpy stack marker to tell `modify_memory` that it needs to pop from the stack
+    StackMarker,
+
     Empty,
 }

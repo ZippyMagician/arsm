@@ -53,3 +53,6 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `chr <A>` -> Print A as a character instead of number
 * `hlt <A>` -> Terminates program with exit code A
 * `ret` -> Return to the point at which this jump was called from
+* `stk <A>` -> Resizes stack to size A. Defaults to 0
+* `psh <A> <B>` -> Pushes A byte number B to stack
+* `pop <A>` -> Pops N bytes (enough to fill A) and move to A.

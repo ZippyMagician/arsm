@@ -73,6 +73,33 @@ fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -> T 
     match obj {
         Op::Numeric(val) => num_traits::cast(*val),
 
+        Op::StackMarker => {
+            match T::len() {
+                1 => num_traits::cast(
+                    env.mem
+                        .s_pop_8()
+                        .expect("Attempted to pop from empty stack"),
+                ),
+                2 => num_traits::cast(
+                    env.mem
+                        .s_pop_16()
+                        .expect("Attempted to pop from empty stack"),
+                ),
+                4 => num_traits::cast(
+                    env.mem
+                        .s_pop_32()
+                        .expect("Attempted to pop from empty stack"),
+                ),
+                8 => num_traits::cast(
+                    env.mem
+                        .s_pop_32()
+                        .expect("Attempted to pop from empty stack"),
+                ),
+                // Can't happen
+                _ => panic!(),
+            }
+        }
+
         Op::Memory(ident, op) => {
             let val = to_numeric(env, ast, &op);
 
@@ -125,9 +152,7 @@ fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -> T 
         }
 
         #[cfg(feature = "inline-python")]
-        Op::InlinePy(code) => {
-            num_traits::cast(env.py.run_python(code))
-        }
+        Op::InlinePy(code) => num_traits::cast(env.py.run_python(code)),
 
         _ => panic!("Invalid numeric literal: {:?}", obj),
     }
@@ -184,6 +209,7 @@ fn modify_memory(env: &mut Environment, ast: &[Op], obj: &Op, val: &Op) {
                 _ => panic!("Invalid identifier for memory: '{}'", ident),
             }
         }
+
         _ => panic!("Invalid parameter: {:?}", obj),
     }
 }
@@ -386,6 +412,41 @@ fn run_cmd(
                 ast[*ind]
             ),
         },
+
+        "stk" => {
+            let count = to_numeric(env, ast, args[0]);
+            env.mem.resize_stack(count);
+            bx!(false)
+        }
+
+        "psh" => {
+            let allocation = to_numeric(env, ast, args[0]);
+            match allocation {
+                1 => {
+                    let n = to_numeric(env, ast, args[1]);
+                    env.mem.s_push::<u8>(&n)
+                }
+
+                2 => {
+                    let n = to_numeric(env, ast, args[1]);
+                    env.mem.s_push::<i16>(&n)
+                }
+
+                4 => {
+                    let n = to_numeric(env, ast, args[1]);
+                    env.mem.s_push::<i32>(&n)
+                }
+                // Shouldn't happen
+                _ => panic!(),
+            }
+
+            bx!(false)
+        }
+
+        "pop" => {
+            modify_memory(env, ast, args[0], &Op::StackMarker);
+            bx!(false)
+        }
 
         "db" => {
             let mut i = to_numeric(env, ast, args[0]);

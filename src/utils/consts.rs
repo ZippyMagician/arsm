@@ -38,7 +38,10 @@ lazy_static! {
             "chr" 1;
             "hlt" 1;
             "ret" 0;
-            "cmp" 2
+            "cmp" 2;
+            "stk" 1;
+            "psh" 2;
+            "pop" 1
         );
         m
     };
