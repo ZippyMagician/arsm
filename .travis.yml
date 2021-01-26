@@ -1,15 +1,30 @@
-language: rust
-rust: stable
 os: linux
 dist: trusty
 
-before_script:
-  - rustup component add clippy
-  - nvm install 11.1.0
-script:
-  - cargo clippy
-  - cargo build --verbose
-  - cargo test --verbose
-  - node test
+jobs:
+  - name: "Tooling tests"
+    language: rust
+    rust: stable
+    before_script:
+      - rustup component add clippy
+    script:
+      - cargo clippy
+      - cargo build --verbose
+      - cargo test --verbose
+  - name: "Language tests"
+    language: rust
+    rust: stable
+    before_script:
+      - nvm install 11.1.0
+    script:
+      - node test test_cases/
+  - name: "Python tests"
+    language: rust
+    rust: stable
+    before_script:
+      - nvm install 11.1.0
+    script:
+      - node test test_cases/python/ "--features inline-python --release"
+      - python3 inline/src.py
 
 cache: cargo

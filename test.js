@@ -2,6 +2,7 @@ const exec = require('child_process').exec;
 const fs = require('fs');
 
 const FILE_EXTENSION = ".asm";
+const ARGS = process.argv;
 
 function testPath(path) {
     let map = {};
@@ -25,7 +26,7 @@ function testPath(path) {
 
     for (let c in map) {
         c = map[c];
-        exec(`cargo -q run "${c[0]}" -u "${c[1]}"`,  (err, stdout, stderr) => {
+        exec(`cargo -q run ${ARGS[3] ? ARGS[3] : ""} "${c[0]}" -u "${c[1]}"`,  (err, stdout, stderr) => {
             if (stdout == c[2]) {
                 console.log("Case " + c[0] + ": \x1b[32m Passed\x1b[0m");
             } else {
@@ -41,4 +42,4 @@ function testPath(path) {
 }
 
 // Python test cases are not run here
-testPath('test_cases/');
+testPath(ARGS[2]);
