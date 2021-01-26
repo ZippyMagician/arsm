@@ -1,10 +1,10 @@
+language: rust
+rust: stable
 os: linux
 dist: trusty
 
 jobs:
   - name: "Tooling tests"
-    language: rust
-    rust: stable
     before_script:
       - rustup component add clippy
     script:
@@ -12,15 +12,11 @@ jobs:
       - cargo build --verbose
       - cargo test --verbose
   - name: "Language tests"
-    language: rust
-    rust: stable
     before_script:
       - nvm install 11.1.0
     script:
       - node test test_cases/
   - name: "Python tests"
-    language: rust
-    rust: stable
     before_script:
       - nvm install 11.1.0
     script:
