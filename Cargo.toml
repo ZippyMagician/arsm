@@ -8,7 +8,7 @@ edition = "2018"
 default = []
 
 # If you enable this with `--feature inline-python`, you can put inline python code into the assembly files
-inline-python = [ "pyo3" ]
+inline-python = [ "pyo3", "regex" ]
 
 # Optimizations for the release mode
 [profile.release]
@@ -30,3 +30,4 @@ lazy_static = "1.4.0"
 num-traits = "0.2"
 
 pyo3 = { version = "0.13.1", features = ["auto-initialize", "extension-module"], optional = true }
+regex = { version = "1.4.3", optional = true }

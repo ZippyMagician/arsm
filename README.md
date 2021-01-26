@@ -10,7 +10,7 @@ You have two options: installing normal arsm, or arsm with inline python support
 ### Normal
 run `cargo install --path path/to/repository`.
 ### Inline Python
-Make sure you have [Python3](https://python.org) installed on your system. Then, run `cargo install --features inline-python --path path/to/repository`. Inline python can access the stack via the `stk` variable, along with a few special functions
+Make sure you have [Python3](https://python.org) installed on your system. Then, run `cargo install --features inline-python --path path/to/repository`. Inline python can access the stack via the `stk` variable and registers via the `@` prefix, along with a few special functions
 ## Testing
 Use the command `node test` to test every case in `./test_cases`. A new case called `N` can be created by:
  1. Creating `N.asm`, which is the program

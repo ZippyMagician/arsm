@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 
 use std::{
-    alloc::{alloc_zeroed, dealloc, Layout},
+    alloc::{alloc_zeroed, Layout},
     ops::Range,
 };
 use std::{fmt, ptr};
@@ -10,7 +10,7 @@ use std::{fmt, ptr};
 use super::consts::{OFFSET, REGISTRY_OFFSET, U8_ALIGN};
 use super::traits::*;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub struct Memory {
     mem: *mut u8,
     pub size: usize,
@@ -281,17 +281,6 @@ impl Memory {
             ]),
 
             _ => panic!("Something went wrong"),
-        }
-    }
-}
-
-impl std::ops::Drop for Memory {
-    fn drop(&mut self) {
-        unsafe {
-            dealloc(
-                self.mem,
-                Layout::from_size_align_unchecked(self.size, U8_ALIGN),
-            );
         }
     }
 }

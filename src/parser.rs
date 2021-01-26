@@ -80,7 +80,7 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
 }
 
 // Converts op to a numeric value
-fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
+pub fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
     match obj {
         Op::Numeric(val) => num_traits::cast(*val),
 
@@ -266,7 +266,7 @@ fn run_cmd(
 ) -> Box<dyn Status> {
     match cmd {
         "mov" | "cmo" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -276,7 +276,7 @@ fn run_cmd(
         }
 
         "inc" | "cin" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -287,7 +287,7 @@ fn run_cmd(
         }
 
         "dec" | "cde" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -298,7 +298,7 @@ fn run_cmd(
         }
 
         "out" | "cou" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -307,7 +307,7 @@ fn run_cmd(
         }
 
         "chr" | "cch" => {
-            if cmd == "cch"  && !env.mem.flag_read_cmp(0) {
+            if cmd == "cch" && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -322,7 +322,7 @@ fn run_cmd(
         }
 
         "mul" | "cmu" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -335,7 +335,7 @@ fn run_cmd(
         }
 
         "div" | "cdi" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -348,7 +348,7 @@ fn run_cmd(
         }
 
         "sub" | "csu" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -361,7 +361,7 @@ fn run_cmd(
         }
 
         "add" | "cad" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -510,7 +510,7 @@ fn run_cmd(
         }
 
         "psh" | "cps" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -538,7 +538,7 @@ fn run_cmd(
         }
 
         "pop" | "cpo" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -563,7 +563,7 @@ fn run_cmd(
         }),
 
         "ret" | "cre" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 
@@ -584,7 +584,7 @@ fn run_cmd(
         }
 
         "hlt" | "chl" => {
-            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
                 return bx!(false);
             }
 

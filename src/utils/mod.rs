@@ -5,7 +5,10 @@ pub mod token;
 pub mod traits;
 
 #[cfg(feature = "inline-python")]
-use pyo3::{prelude::*, types::IntoPyDict};
+use {
+    crate::utils::{consts::REGISTER_REGEX, token::Op},
+    pyo3::{prelude::*, types::IntoPyDict},
+};
 
 // I use Box::new a lot, so this makes it shorter
 #[macro_export]
@@ -30,6 +33,7 @@ impl PyGuard {
 
     #[inline]
     pub fn run_python(&self, env: &crate::env::Environment, code: &str) -> (Option<Vec<u8>>, i32) {
+        let mut code = code.to_string();
         let py = self.guard.python();
 
         let old_stk = unsafe {
@@ -37,6 +41,20 @@ impl PyGuard {
                 crate::utils::consts::OFFSET..env.mem.s_len + crate::utils::consts::OFFSET,
             )
         };
+
+        if REGISTER_REGEX.is_match(&code) {
+            // We can pass an empty slice for the AST as we know this will always be simply a register
+            code = REGISTER_REGEX
+                .replace_all(&code, |caps: &regex::Captures<'_>| {
+                    crate::parser::to_numeric::<i32>(
+                        &mut env.shallow_copy(),
+                        &[],
+                        &Op::Register(format!("{}", &caps[1])),
+                    )
+                    .to_string()
+                })
+                .to_string();
+        }
 
         let dict = [("stk", old_stk)].into_py_dict(py);
 

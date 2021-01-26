@@ -40,6 +40,18 @@ impl Environment {
     pub fn get_parent(&self) -> &Option<Vec<Op>> {
         &self.parent_ast
     }
+
+    pub fn shallow_copy(&self) -> Self {
+        Self {
+            mem: self.mem,
+            stdin: BufIter::new(&mut []),
+            parent_ast: None,
+            jump_point: Vec::new(),
+            pos: (0, 0),
+            #[cfg(feature = "inline-python")]
+            py: PyGuard::new(),
+        }
+    }
 }
 
 impl Debug for Environment {

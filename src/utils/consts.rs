@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+#[cfg(feature = "inline-python")]
+use regex::Regex;
+
 macro_rules! insert_into {
     ($map:expr; $($name:literal $count:literal);*) => {
         $(
@@ -17,7 +20,7 @@ lazy_static! {
         let mut m: HashMap<String, usize> = HashMap::new();
         insert_into!(m;
             "mov" 2; "cmo" 2; "inc" 1; "cin" 1; "dec" 1;
-            "cde" 1; "out" 1; "cou" 1; "jmp" 1; "je"  1; 
+            "cde" 1; "out" 1; "cou" 1; "jmp" 1; "je"  1;
             "jne" 1; "jl"  1; "jle" 1; "jg"  1; "jge" 1;
             "jz"  2; "mul" 2; "div" 2; "add" 2; "sub" 2;
             "cmu" 2; "cdi" 2; "cad" 2; "csu" 2; "str" 2;
@@ -45,3 +48,8 @@ fromBytes = lambda n: int.from_bytes(n, signed=True, byteorder=__import__('sys')
 popN = lambda n, count: [n.pop() for i in range(count)][::-1] 
 
 ret = eval"#;
+
+#[cfg(feature = "inline-python")]
+lazy_static! {
+    pub static ref REGISTER_REGEX: Regex = Regex::new(r#"@([a-e][hl]|[a-e]{1,2}x)"#).unwrap();
+}
