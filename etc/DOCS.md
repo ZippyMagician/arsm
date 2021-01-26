@@ -63,6 +63,9 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `cge <A> <B>` -> Sets conditional flag if A >= B
 * `cl <A> <B>` -> Sets conditional flag if A < B
 * `cle <A> <B>` -> Sets conditional flag if A <= B
+
+Additionally, there are conditional versions of the following:
+mov, inc, dec, out, mul, div, add, sub, chr, hlt, ret, psh, pop (remove the last letter, put a `c` in the front)
 ## Inline Python
 Inline Python supports a few custom functions + variables to manipulate and make use of
 | Name | Type | Description |

@@ -96,12 +96,7 @@ fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -> T 
                         .s_pop_16()
                         .expect("Attempted to pop from empty stack"),
                 ),
-                4 => num_traits::cast(
-                    env.mem
-                        .s_pop_32()
-                        .expect("Attempted to pop from empty stack"),
-                ),
-                8 => num_traits::cast(
+                4 | 8 => num_traits::cast(
                     env.mem
                         .s_pop_32()
                         .expect("Attempted to pop from empty stack"),
@@ -247,7 +242,7 @@ fn set_ind(ind: &mut usize, env: &mut Environment, val: usize) {
 #[inline]
 pub fn check_cmp<T>(env: &mut Environment, ast: &[Op], args: &[&Op], f: T) -> Box<dyn Status>
 where
-    T: FnOnce(i32, i32) -> bool
+    T: FnOnce(i32, i32) -> bool,
 {
     let left: i32 = to_numeric(env, ast, args[0]);
     let right = to_numeric(env, ast, args[1]);
@@ -270,32 +265,52 @@ fn run_cmd(
     args: &[&Op],
 ) -> Box<dyn Status> {
     match cmd {
-        "mov" => {
+        "mov" | "cmo" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             // Move second value into the first
             modify_memory(env, ast, args[0], args[1]);
             bx!(false)
         }
 
-        "inc" => {
+        "inc" | "cin" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             // new_val is 1 more than the previous value
             let new_val = bx!(Op::Numeric(1 + to_numeric::<i32>(env, ast, args[0])));
             modify_memory(env, ast, args[0], &new_val);
             bx!(false)
         }
 
-        "dec" => {
+        "dec" | "cde" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             // new_val is 1 less than the previous value
             let new_val = bx!(Op::Numeric(to_numeric::<i32>(env, ast, args[0]) - 1));
             modify_memory(env, ast, args[0], &new_val);
             bx!(false)
         }
 
-        "out" => {
+        "out" | "cou" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             print!("{}", to_numeric::<i32>(env, ast, args[0]));
             bx!(false)
         }
 
-        "chr" => {
+        "chr" | "cch" => {
+            if cmd == "cch"  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             print!("{}", to_numeric::<u8>(env, ast, args[0]) as char);
             bx!(false)
         }
@@ -306,7 +321,11 @@ fn run_cmd(
             bx!(true)
         }
 
-        "mul" => {
+        "mul" | "cmu" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             // args[0] * args[1] → args[0]
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
@@ -315,7 +334,11 @@ fn run_cmd(
             bx!(false)
         }
 
-        "div" => {
+        "div" | "cdi" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             // args[0] / args[1] → args[0]
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
@@ -324,7 +347,11 @@ fn run_cmd(
             bx!(false)
         }
 
-        "sub" => {
+        "sub" | "csu" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             // args[0] - args[1] → args[0]
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
@@ -333,7 +360,11 @@ fn run_cmd(
             bx!(false)
         }
 
-        "add" => {
+        "add" | "cad" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             // args[0] + args[1] → args[0]
             let left: i32 = to_numeric(env, ast, args[0]);
             let right: i32 = to_numeric(env, ast, args[1]);
@@ -442,7 +473,7 @@ fn run_cmd(
         "cle" => check_cmp(env, ast, args, |l, r| l <= r),
 
         "cg" => check_cmp(env, ast, args, |l, r| l > r),
-    
+
         "cge" => check_cmp(env, ast, args, |l, r| l >= r),
 
         "cz" => {
@@ -478,7 +509,11 @@ fn run_cmd(
             bx!(false)
         }
 
-        "psh" => {
+        "psh" | "cps" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             let allocation = to_numeric(env, ast, args[0]);
             match allocation {
                 1 => {
@@ -502,7 +537,11 @@ fn run_cmd(
             bx!(false)
         }
 
-        "pop" => {
+        "pop" | "cpo" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             modify_memory(env, ast, args[0], &Op::StackMarker);
             bx!(false)
         }
@@ -523,11 +562,15 @@ fn run_cmd(
             None => 0,
         }),
 
-        "ret" => {
+        "ret" | "cre" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
             if !env.jump_point.is_empty() {
                 let (left, right) = env.jump_point.pop().unwrap();
                 // If it a top-level call, return to the next bit of the top-level. Otherwise, return to the next bit of the branch
-                if let Op::Branch(_, _) = env.get_parent().as_ref().unwrap()[left] {
+                if let Op::Branch(..) = env.get_parent().as_ref().unwrap()[left] {
                     env.pos = (left, right + 1);
                 } else {
                     env.pos = (left + 1, right);
@@ -540,7 +583,13 @@ fn run_cmd(
             bx!(true)
         }
 
-        "hlt" => std::process::exit(to_numeric(env, ast, args[0])),
+        "hlt" | "chl" => {
+            if cmd.starts_with('c')  && !env.mem.flag_read_cmp(0) {
+                return bx!(false);
+            }
+
+            std::process::exit(to_numeric(env, ast, args[0]))
+        }
 
         _ => panic!("Command: {} unrecognized", cmd),
     }

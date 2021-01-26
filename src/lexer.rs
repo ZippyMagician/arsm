@@ -83,10 +83,11 @@ pub fn lex(program: &str) -> Vec<Node> {
             res.push(Node::Char(chr));
             buf.clear();
         } else if !chr.is_ascii_alphabetic() {
-            // Note: There is an edge case where this will not work, but as it is simpler then before and
-            // will most likely never break, I'd rather have it in this state.
-            // https://github.com/ZippyMagician/arsm/blob/814fb4e9bd302a4f985396fa63ea27194177bb9d/src/lexer.rs#L57
-            if buf.ends_with(REGISTER_ENDINGS) && buf.starts_with(REGISTERS) {
+            if buf.ends_with(REGISTER_ENDINGS)
+                && buf[..buf.len() - 1]
+                    .chars()
+                    .all(|chr| REGISTERS.contains(&chr))
+            {
                 res.push(Node::Register(buf.clone()));
             } else if !buf.is_empty() {
                 res.push(Node::Keyword(buf.clone()));

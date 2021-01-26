@@ -117,9 +117,8 @@ impl Memory {
 
     #[inline]
     pub fn flag_nreset_cmp(&mut self, ind: u8) {
-        let mask = 255 ^ (1 << ind);
+        let mask = 0b1111_1111 ^ (0b1 << ind);
         let num = self.read(REGISTRY_OFFSET);
-
         self.write(REGISTRY_OFFSET, mask & num);
     }
 
