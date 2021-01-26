@@ -14,11 +14,11 @@ function testPath(path) {
 
             if (!map[ident]) map[ident] = new Array(3);
             if (file.endsWith(FILE_EXTENSION)) {
-                map[ident][0] = 'test_cases/' + file;
+                map[ident][0] = ARGS[2] + file;
             } else if (file.endsWith('.in')) {
-                map[ident][1] = fs.readFileSync('test_cases/' + file).toString();
+                map[ident][1] = fs.readFileSync(ARGS[2] + file).toString();
             } else if (file.endsWith('.out')) {
-                map[ident][2] = fs.readFileSync('test_cases/' + file).toString();
+                map[ident][2] = fs.readFileSync(ARGS[2] + file).toString();
             }
         }
     }
