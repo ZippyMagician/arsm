@@ -1,6 +1,6 @@
 [package]
 name = "arsm"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Joshua B. <zippymagician1@gmail.com>"]
 edition = "2018"
 
