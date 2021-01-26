@@ -17,7 +17,10 @@ jobs:
     script:
       - node test test_cases/
   - name: "Python tests"
+    language: python
+    python: 3.9
     before_script:
+      - rustup install stable
       - nvm install 11.1.0
     script:
       - node test test_cases/python/ "--features inline-python --release"
