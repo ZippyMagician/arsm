@@ -65,5 +65,6 @@ pub const OFFSET: usize = REGISTRY_OFFSET + 10;
 #[cfg(feature = "inline-python")]
 pub const PYTHON_HEAD: &'static str = r#"
 fromBytes = lambda n: int.from_bytes(n, signed=True, byteorder=__import__('sys').byteorder)
+popN = lambda n, count: [n.pop() for i in range(count)]
 
 ret = eval"#;
