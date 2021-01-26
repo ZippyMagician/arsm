@@ -18,7 +18,7 @@ jobs:
       - node test test_cases/
   - name: "Python tests"
     language: python
-    python: 3.9
+    python: "3.9-dev"
     before_script:
       - rustup install stable
       - nvm install 11.1.0
