@@ -17,11 +17,17 @@ jobs:
     script:
       - node test test_cases/
   - name: "Python tests"
+    env:
+      - PYENV_VERSION=3.9.1
     before_script:
-      #- nvm install 11.1.0
-      #- pyenv install 3.6.3
+      - nvm install 11.1.0
+      - cd $(pyenv root) && git checkout master && git pull && cd -
+      - pyenv install --list
+      - pyenv install $PYENV_VERSION
       - pyenv versions
-    #script:
+      - pyenv global $PYENV_VERSION
+    script:
+      - python -v
       #- node test test_cases/python/ "--features inline-python --release"
       #- python3 inline/src.py
 
