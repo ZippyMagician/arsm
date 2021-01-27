@@ -19,6 +19,7 @@ jobs:
   - name: "Python tests"
     before_script:
       - nvm install 11.1.0
+      - git clone https://github.com/pyenv/pyenv-update.git $(pyenv root)/plugins/pyenv-update
       - pyenv update
       - pyenv install -v 3.9
       - pyenv global 3.9
