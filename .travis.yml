@@ -16,12 +16,13 @@ jobs:
       - nvm install 11.1.0
     script:
       - node test test_cases/
-# This has been commented out because I can't get this thing to work
-#  - name: "Python tests"
-#    before_script:
-#      - nvm install 11.1.0
-#    script:
-#      - node test test_cases/python/ "--features inline-python --release"
-#      - python3 inline/src.py
+  - name: "Python tests"
+    before_script:
+      - nvm install 11.1.0
+      - pyenv install -v 3.9
+      - pyenv global 3.9
+    script:
+      - node test test_cases/python/ "--features inline-python --release"
+      - python3 inline/src.py
 
 cache: cargo
