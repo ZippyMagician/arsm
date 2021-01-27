@@ -19,8 +19,8 @@ jobs:
   - name: "Python tests"
     before_script:
       - nvm install 11.1.0
-      - pyenv install -v 3.9
-      - pyenv global 3.9
+      - pyenv install -v 3.9-dev
+      - pyenv global 3.9-dev
     script:
       - node test test_cases/python/ "--features inline-python --release"
       - python3 inline/src.py
