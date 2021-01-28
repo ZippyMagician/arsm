@@ -17,24 +17,13 @@ jobs:
     script:
       - node test test_cases/
   - name: "Python tests"
-    env:
-      - PYENV_VERSION=3.9.1
+    language: generic
     before_script:
-      - nvm install 11.1.0
-      - cd $(pyenv root) && git checkout master && git pull && cd -
-      - sudo apt-get install -y build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
-      - wget https://www.openssl.org/source/openssl-1.1.1g.tar.gz
-      - tar zxvf openssl-1.1.1g.tar.gz
-      - cd openssl-1.1.1g
-      - ./config --prefix=/home/travis/openssl --openssldir=/home/travis/openssl no-ssl2
-      - make && make test && make install
-      - cd ~
-      - pyenv install --list
-      - CFLAGS=-"I$HOME/openssl/include" LDFLAGS="-L$HOME/openssl/lib" SSH="$HOME/openssl" pyenv install $PYENV_VERSION
-      - pyenv versions
-      - pyenv global $PYENV_VERSION
+      - curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -o rustup.sh
+      - echo 1 | sh rustup.sh -y
+      - . $HOME/env/.cargo
+      - rustup install stable
     script:
-      - python -v
       - node test test_cases/python/ "--features inline-python --release"
       - python3 inline/src.py
 
