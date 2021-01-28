@@ -16,23 +16,6 @@ jobs:
       - nvm install 11.1.0
     script:
       - node test test_cases/
-  - name: "Python tests"
-    language: python
-    # Later versions won't work, god knows why
-    python: 3.6
-    addons:
-      apt:
-        packages:
-          - gcc
-          - g++
-    before_script:
-      - nvm install 11.1.0
-      - curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -o rustup.sh
-      - echo 1 | sh rustup.sh -y
-      - . $HOME/.cargo/env
-      - rustup install stable
-    script:
-      - node test test_cases/python/ "--features inline-python --release"
-      - python3 inline/src.py
+# Run python tests manually
 
 cache: cargo
