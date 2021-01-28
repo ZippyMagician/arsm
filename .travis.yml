@@ -17,8 +17,10 @@ jobs:
     script:
       - node test test_cases/
   - name: "Python tests"
-    language: generic
+    language: python
+    python: 3.9
     before_script:
+      - nvm install 11.1.0
       - curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -o rustup.sh
       - echo 1 | sh rustup.sh -y
       - . $HOME/.cargo/env
