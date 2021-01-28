@@ -21,7 +21,7 @@ jobs:
     before_script:
       - curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -o rustup.sh
       - echo 1 | sh rustup.sh -y
-      - . $HOME/env/.cargo
+      - . $HOME/.cargo/env
       - rustup install stable
     script:
       - node test test_cases/python/ "--features inline-python --release"
