@@ -18,7 +18,8 @@ jobs:
       - node test test_cases/
   - name: "Python tests"
     language: python
-    python: 3.9.1
+    # Later versions won't work, god knows why
+    python: 3.6
     before_script:
       - nvm install 11.1.0
       - curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -o rustup.sh
