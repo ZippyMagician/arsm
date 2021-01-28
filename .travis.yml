@@ -23,7 +23,8 @@ jobs:
       - nvm install 11.1.0
       - cd $(pyenv root) && git checkout master && git pull && cd -
       - sudo apt-get install -y build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
-      - pacman -S --needed base-devel openssl zlib bzip2 readline sqlite curl ncurses xz tk libffi python-pyopenssl git
+      - LDFLAGS="-L/usr/lib/openssl-1.0"
+      - CFLAGS="-I/usr/include/openssl-1.0"
       - pyenv install --list
       - pyenv install $PYENV_VERSION
       - pyenv versions
