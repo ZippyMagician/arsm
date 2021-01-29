@@ -41,6 +41,8 @@ impl Environment {
         &self.parent_ast
     }
 
+    // Only used by inline-python
+    #[allow(dead_code)]
     pub fn shallow_copy(&self) -> Self {
         Self {
             mem: self.mem,

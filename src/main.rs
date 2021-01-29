@@ -45,7 +45,7 @@ fn main() {
 
     // You can call `unwrap` here as INPUT is required
     let file = matches.value_of("INPUT").unwrap();
-    if let Ok(program) = std::fs::read_to_string(file) {
+    if let Ok(program) = handle_input(file) {
         if matches.is_present("timed") {
             let t0 = Instant::now();
             run_program(&*program, &matches);
@@ -57,6 +57,15 @@ fn main() {
     } else {
         panic!("File not found: {}", file);
     }
+}
+
+#[inline(always)]
+fn handle_input(c: &str) -> Result<String, std::io::Error> {
+    #[cfg(feature = "literal-code")]
+    return Ok(c.to_owned());
+        
+    #[cfg(not(feature = "literal-code"))]
+    return std::fs::read_to_string(c);
 }
 
 #[inline]

@@ -15,7 +15,7 @@ jobs:
     before_script:
       - nvm install 11.1.0
     script:
-      - node test test_cases/
+      - cd tests && node test std_cases/
 # Run python tests manually
 
 cache: cargo

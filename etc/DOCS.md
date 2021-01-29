@@ -73,6 +73,7 @@ Inline Python supports a few custom functions + variables to manipulate and make
 | `fromBytes` | func | Converts list $1 `u8` bytes to single, signed integer. Useful for joining sections of the stack |
 | `stk` | var | The current stack stored in memory. Can be modified. WARNING: EXCEEDING THE BOUNDS OF THE STACK **WILL NOT** ERROR, AND MAY LEAD TO SOME DATA BEING LOST |
 | `popN` | func | Pops the top $2 items from the list $1 |
+
 In addition, you can access any register (for example `eax`) by prefixing it with an `@`. For instance:
 ```asm
 mov ex 14

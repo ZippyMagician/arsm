@@ -10,6 +10,9 @@ default = []
 # If you enable this with `--feature inline-python`, you can put inline python code into the assembly files
 inline-python = [ "pyo3", "regex" ]
 
+# Only for the docker build. Files get passes literally
+literal-code = []
+
 # Optimizations for the release mode
 [profile.release]
 opt-level = 3
