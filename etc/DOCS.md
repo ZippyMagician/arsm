@@ -39,6 +39,12 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `div <A> <B>` -> Divide A by B, store in A
 * `add <A> <B>` -> Add A and B, store in A
 * `sub <A> <B>` -> Subtract B from A, store in A
+* `lsh <A> <B>` -> A << B, store in A
+* `rsh <A> <B>` -> A >> B, store in A
+* `or <A> <B>` -> A | B, store in A
+* `xor <A> <B>` -> A ^ B, store in A
+* `and <A> <B>` -> A & B, store in A
+* `not <A>` -> ~A
 * `str <A> <B>` -> Place string A in memory, with final character B
 * `db <A> <B>` -> Get length of data, starting at point A in memory and ending when the point in memory equals B
 * `in` -> Get next byte of STDIN or a null-byte (`0`) if none left
@@ -57,7 +63,7 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `cle <A> <B>` -> Sets conditional flag if A <= B
 
 Additionally, there are conditional versions of the following:
-jmp, mov, inc, dec, out, mul, div, add, sub, chr, hlt, ret, psh, pop (remove the last letter, put a `c` in the front)
+jmp, mov, inc, dec, out, mul, div, add, sub, lsh, rsh, or, and, xor, not, chr, hlt, ret, psh, pop (remove the last letter, put a `c` in the front)
 ## Inline Python
 Inline Python supports a few custom functions + variables to manipulate and make use of
 | Name | Type | Description |

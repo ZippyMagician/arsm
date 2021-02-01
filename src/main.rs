@@ -63,7 +63,7 @@ fn main() {
 fn handle_input(c: &str) -> Result<String, std::io::Error> {
     #[cfg(feature = "literal-code")]
     return Ok(c.to_owned());
-        
+
     #[cfg(not(feature = "literal-code"))]
     return std::fs::read_to_string(c);
 }

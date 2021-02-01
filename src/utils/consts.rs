@@ -21,12 +21,15 @@ lazy_static! {
         insert_into!(m;
             "mov" 2; "cmo" 2; "inc" 1; "cin" 1; "dec" 1;
             "cde" 1; "out" 1; "cou" 1; "jmp" 1; "cjm" 1;
-            "mul" 2; "div" 2; "add" 2; "sub" 2; "cmu" 2; 
-            "cdi" 2; "cad" 2; "csu" 2; "str" 2; "db"  2; 
-            "in"  0; "chr" 1; "cch" 1; "hlt" 1; "chl" 1; 
-            "ret" 0; "cre" 0; "cmp" 2; "stk" 1; "psh" 2; 
-            "cps" 2; "pop" 1; "cpo" 1; "ceq" 2; "cg"  2; 
-            "cge" 2; "cl"  2; "cle" 2; "cne" 2; "cz"  1
+            "mul" 2; "div" 2; "add" 2; "sub" 2; "cmu" 2;
+            "cdi" 2; "cad" 2; "csu" 2; "str" 2; "db"  2;
+            "in"  0; "chr" 1; "cch" 1; "hlt" 1; "chl" 1;
+            "ret" 0; "cre" 0; "cmp" 2; "stk" 1; "psh" 2;
+            "cps" 2; "pop" 1; "cpo" 1; "ceq" 2; "cg"  2;
+            "cge" 2; "cl"  2; "cle" 2; "cne" 2; "cz"  1;
+            "rsh" 2; "crs" 2; "lsh" 2; "cls" 2; "or"  2;
+            "cor" 2; "xor" 2; "cxo" 2; "and" 2; "can" 2;
+            "not" 1; "cno" 1
         );
         m
     };

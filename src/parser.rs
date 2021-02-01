@@ -256,6 +256,27 @@ where
     bx!(false)
 }
 
+#[inline]
+pub fn perform_op<T>(
+    env: &mut Environment,
+    ast: &[Op],
+    args: &[&Op],
+    cmd: &str,
+    f: T,
+) -> Box<dyn Status>
+where
+    T: FnOnce(i32, i32) -> i32,
+{
+    if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
+        return bx!(false);
+    }
+
+    let left: i32 = to_numeric(env, ast, args[0]);
+    let right: i32 = to_numeric(env, ast, args[1]);
+    modify_memory(env, ast, args[0], &Op::Numeric(f(left, right)));
+    bx!(false)
+}
+
 // Returns `true` if `ind` was modified, `false` otherwise
 fn run_cmd(
     env: &mut Environment,
@@ -281,7 +302,7 @@ fn run_cmd(
             }
 
             // new_val is 1 more than the previous value
-            let new_val = bx!(Op::Numeric(1 + to_numeric::<i32>(env, ast, args[0])));
+            let new_val = Op::Numeric(1 + to_numeric::<i32>(env, ast, args[0]));
             modify_memory(env, ast, args[0], &new_val);
             bx!(false)
         }
@@ -292,7 +313,7 @@ fn run_cmd(
             }
 
             // new_val is 1 less than the previous value
-            let new_val = bx!(Op::Numeric(to_numeric::<i32>(env, ast, args[0]) - 1));
+            let new_val = Op::Numeric(to_numeric::<i32>(env, ast, args[0]) - 1);
             modify_memory(env, ast, args[0], &new_val);
             bx!(false)
         }
@@ -319,63 +340,19 @@ fn run_cmd(
             if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
-            
+
             let n = to_numeric(env, ast, args[0]);
             set_ind(ind, env, n);
             bx!(true)
         }
 
-        "mul" | "cmu" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
-                return bx!(false);
-            }
+        "mul" | "cmu" => perform_op(env, ast, args, cmd, |l, r| l * r),
 
-            // args[0] * args[1] → args[0]
-            let left: i32 = to_numeric(env, ast, args[0]);
-            let right: i32 = to_numeric(env, ast, args[1]);
+        "div" | "cdi" => perform_op(env, ast, args, cmd, |l, r| l / r),
 
-            modify_memory(env, ast, args[0], &bx!(Op::Numeric(left * right)));
-            bx!(false)
-        }
+        "sub" | "csu" => perform_op(env, ast, args, cmd, |l, r| l - r),
 
-        "div" | "cdi" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
-                return bx!(false);
-            }
-
-            // args[0] / args[1] → args[0]
-            let left: i32 = to_numeric(env, ast, args[0]);
-            let right: i32 = to_numeric(env, ast, args[1]);
-
-            modify_memory(env, ast, args[0], &bx!(Op::Numeric(left / right)));
-            bx!(false)
-        }
-
-        "sub" | "csu" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
-                return bx!(false);
-            }
-
-            // args[0] - args[1] → args[0]
-            let left: i32 = to_numeric(env, ast, args[0]);
-            let right: i32 = to_numeric(env, ast, args[1]);
-
-            modify_memory(env, ast, args[0], &bx!(Op::Numeric(left - right)));
-            bx!(false)
-        }
-
-        "add" | "cad" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
-                return bx!(false);
-            }
-
-            // args[0] + args[1] → args[0]
-            let left: i32 = to_numeric(env, ast, args[0]);
-            let right: i32 = to_numeric(env, ast, args[1]);
-
-            modify_memory(env, ast, args[0], &bx!(Op::Numeric(left + right)));
-            bx!(false)
-        }
+        "add" | "cad" => perform_op(env, ast, args, cmd, |l, r| l + r),
 
         "ceq" => check_cmp(env, ast, args, |l, r| l == r),
 
@@ -456,6 +433,26 @@ fn run_cmd(
             }
 
             modify_memory(env, ast, args[0], &Op::StackMarker);
+            bx!(false)
+        }
+
+        "lsh" | "cls" => perform_op(env, ast, args, cmd, |l, r| l << r),
+
+        "rsh" | "crs" => perform_op(env, ast, args, cmd, |l, r| l >> r),
+
+        "or" | "cor" => perform_op(env, ast, args, cmd, |l, r| l | r),
+
+        "xor" | "cxo" => perform_op(env, ast, args, cmd, |l, r| l ^ r),
+
+        "and" | "can" => perform_op(env, ast, args, cmd, |l, r| l & r),
+
+        "not" | "cno" => {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
+                return bx!(false);
+            }
+
+            let val: i32 = to_numeric(env, ast, args[0]);
+            modify_memory(env, ast, args[0], &Op::Numeric(!val));
             bx!(false)
         }
 
