@@ -248,9 +248,9 @@ where
     let right = to_numeric(env, ast, args[1]);
 
     if f(left, right) {
-        env.mem.flag_write_cmp(0);
+        env.mem.flag_write_cmp();
     } else {
-        env.mem.flag_nreset_cmp(0);
+        env.mem.flag_reset_cmp();
     }
 
     bx!(false)
@@ -266,7 +266,7 @@ fn run_cmd(
 ) -> Box<dyn Status> {
     match cmd {
         "mov" | "cmo" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -276,7 +276,7 @@ fn run_cmd(
         }
 
         "inc" | "cin" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -287,7 +287,7 @@ fn run_cmd(
         }
 
         "dec" | "cde" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -298,7 +298,7 @@ fn run_cmd(
         }
 
         "out" | "cou" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -307,7 +307,7 @@ fn run_cmd(
         }
 
         "chr" | "cch" => {
-            if cmd == "cch" && !env.mem.flag_read_cmp(0) {
+            if cmd == "cch" && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -315,14 +315,18 @@ fn run_cmd(
             bx!(false)
         }
 
-        "jmp" => {
+        "jmp" | "cjm" => {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
+                return bx!(false);
+            }
+            
             let n = to_numeric(env, ast, args[0]);
             set_ind(ind, env, n);
             bx!(true)
         }
 
         "mul" | "cmu" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -335,7 +339,7 @@ fn run_cmd(
         }
 
         "div" | "cdi" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -348,7 +352,7 @@ fn run_cmd(
         }
 
         "sub" | "csu" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -361,7 +365,7 @@ fn run_cmd(
         }
 
         "add" | "cad" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -371,97 +375,6 @@ fn run_cmd(
 
             modify_memory(env, ast, args[0], &bx!(Op::Numeric(left + right)));
             bx!(false)
-        }
-
-        "cmp" => {
-            env.mem.flag_reset_cmp();
-
-            let left: i32 = to_numeric(env, ast, args[0]);
-            let right: i32 = to_numeric(env, ast, args[1]);
-
-            let mut num = if env.mem.flag_read_cmp(0) { 1 } else { 0 };
-            if left == right {
-                num |= 0b10;
-            }
-            if left > right {
-                num |= 0b100
-            }
-            if left < right {
-                num |= 0b1000
-            }
-            env.mem.flag_write_whole_cmp(num);
-
-            bx!(false)
-        }
-
-        "je" => {
-            bx!(if env.mem.flag_read_cmp(1) {
-                let n = to_numeric(env, ast, args[0]);
-                set_ind(ind, env, n);
-                true
-            } else {
-                false
-            })
-        }
-
-        "jne" => {
-            bx!(if !env.mem.flag_read_cmp(1) {
-                let n = to_numeric(env, ast, args[2]);
-                set_ind(ind, env, n);
-                true
-            } else {
-                false
-            })
-        }
-
-        "jz" => {
-            bx!(if to_numeric::<i32>(env, ast, args[0]) == 0 {
-                let n = to_numeric(env, ast, args[1]);
-                set_ind(ind, env, n);
-                true
-            } else {
-                false
-            })
-        }
-
-        "jg" => {
-            bx!(if env.mem.flag_read_cmp(2) {
-                let n = to_numeric(env, ast, args[0]);
-                set_ind(ind, env, n);
-                true
-            } else {
-                false
-            })
-        }
-
-        "jge" => {
-            bx!(if env.mem.flag_read_cmp(1) && env.mem.flag_read_cmp(2) {
-                let n = to_numeric(env, ast, args[0]);
-                set_ind(ind, env, n);
-                true
-            } else {
-                false
-            })
-        }
-
-        "jl" => {
-            bx!(if env.mem.flag_read_cmp(3) {
-                let n = to_numeric(env, ast, args[0]);
-                set_ind(ind, env, n);
-                true
-            } else {
-                false
-            })
-        }
-
-        "jle" => {
-            bx!(if env.mem.flag_read_cmp(1) && env.mem.flag_read_cmp(3) {
-                let n = to_numeric(env, ast, args[0]);
-                set_ind(ind, env, n);
-                true
-            } else {
-                false
-            })
         }
 
         "ceq" => check_cmp(env, ast, args, |l, r| l == r),
@@ -478,9 +391,9 @@ fn run_cmd(
 
         "cz" => {
             if to_numeric::<i32>(env, ast, args[0]) == 0 {
-                env.mem.flag_write_cmp(0);
+                env.mem.flag_write_cmp();
             } else {
-                env.mem.flag_nreset_cmp(0);
+                env.mem.flag_reset_cmp();
             }
 
             bx!(false)
@@ -510,7 +423,7 @@ fn run_cmd(
         }
 
         "psh" | "cps" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -538,7 +451,7 @@ fn run_cmd(
         }
 
         "pop" | "cpo" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -563,7 +476,7 @@ fn run_cmd(
         }),
 
         "ret" | "cre" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 
@@ -584,7 +497,7 @@ fn run_cmd(
         }
 
         "hlt" | "chl" => {
-            if cmd.starts_with('c') && !env.mem.flag_read_cmp(0) {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
                 return bx!(false);
             }
 

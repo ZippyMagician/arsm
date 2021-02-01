@@ -1,6 +1,7 @@
 .loop
   mov eh in
-  jz eh :skip
+  cz eh
+  cjm :skip
   chr eh
   jmp :loop
 ..skip

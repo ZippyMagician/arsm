@@ -3,8 +3,8 @@ stk 10
 .add
     psh 1 al
     inc al
-    cmp al 10
-    je :test
+    ceq al 10
+    cjm :test
     jmp :add
 ..test
     out { stk.pop() }
@@ -12,7 +12,8 @@ stk 10
     pop bl
     out bl
     sub al 2
-    jz al :end
+    cz al
+    cjm :end
     chr ',
     jmp :test
 ..end

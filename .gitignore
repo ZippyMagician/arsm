@@ -5,3 +5,6 @@ Cargo.lock
 # Some files I use for testing
 /debug
 *.tmp
+
+# Until I can fix the linking errors with inline python
+Dockerfile

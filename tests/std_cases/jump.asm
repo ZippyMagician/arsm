@@ -4,7 +4,8 @@
     jmp :loop
 ..helper
     mov eh in
-    jz eh :end
+    cz eh
+    cjm :end
     ret
 ..end
     hlt 0

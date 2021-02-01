@@ -34,15 +34,7 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `inc <A>` -> Increment A
 * `dec <A>` -> Decrement A
 * `out <A>` -> Print A with no newline
-* `cmp <A> <B>` -> Compares A to B and sets comparison flags depending on the result
 * `jmp <A>` -> Goto the branch entitled A (note: A is a **label**, not a **branch**)
-* `je <C>` -> Goto branch C if equal
-* `jne <C>` -> Goto branch C if not equal
-* `jz <A> <B>` -> Goto branch B if A is zero
-* `jg <C>` -> Goto branch C if greater than
-* `jge <C>` -> Goto branch C if greater than or equal to
-* `jl <C>` -> Goto branch C if less than
-* `jle <C>` -> Goto branch C if less than or equal to
 * `mul <A> <B>` -> Multiply A by B, store in A
 * `div <A> <B>` -> Divide A by B, store in A
 * `add <A> <B>` -> Add A and B, store in A
@@ -65,7 +57,7 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `cle <A> <B>` -> Sets conditional flag if A <= B
 
 Additionally, there are conditional versions of the following:
-mov, inc, dec, out, mul, div, add, sub, chr, hlt, ret, psh, pop (remove the last letter, put a `c` in the front)
+jmp, mov, inc, dec, out, mul, div, add, sub, chr, hlt, ret, psh, pop (remove the last letter, put a `c` in the front)
 ## Inline Python
 Inline Python supports a few custom functions + variables to manipulate and make use of
 | Name | Type | Description |

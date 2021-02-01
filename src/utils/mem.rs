@@ -98,16 +98,8 @@ impl Memory {
 impl Memory {
     // cmp flags (generic, eq, g, l, unused, unused, unused)
     #[inline]
-    pub fn flag_write_cmp(&mut self, ind: u8) {
-        let mask = 1 << ind;
-        let num = self.read(REGISTRY_OFFSET);
-
-        self.write(REGISTRY_OFFSET, mask | num);
-    }
-
-    #[inline]
-    pub fn flag_write_whole_cmp(&mut self, val: u8) {
-        self.write(REGISTRY_OFFSET, val);
+    pub fn flag_write_cmp(&mut self) {
+        self.write(REGISTRY_OFFSET, 1);
     }
 
     #[inline]
@@ -116,16 +108,8 @@ impl Memory {
     }
 
     #[inline]
-    pub fn flag_nreset_cmp(&mut self, ind: u8) {
-        let mask = 0b1111_1111 ^ (0b1 << ind);
-        let num = self.read(REGISTRY_OFFSET);
-        self.write(REGISTRY_OFFSET, mask & num);
-    }
-
-    #[inline]
-    pub fn flag_read_cmp(&self, ind: u8) -> bool {
-        let mask = 1 << ind;
-        self.read(REGISTRY_OFFSET) & mask != 0
+    pub fn flag_read_cmp(&self) -> bool {
+        self.read(REGISTRY_OFFSET) != 0
     }
 }
 
@@ -358,12 +342,10 @@ mod mem_tests {
     #[test]
     fn test_flags() {
         let mut env = Memory::init(20, 0);
-        env.flag_write_cmp(2);
-        env.flag_write_cmp(4);
+        env.flag_write_cmp();
 
-        assert!(!env.flag_read_cmp(0));
-        assert!(env.flag_read_cmp(4));
+        assert!(env.flag_read_cmp());
         env.flag_reset_cmp();
-        assert!(!env.flag_read_cmp(2));
+        assert!(!env.flag_read_cmp());
     }
 }

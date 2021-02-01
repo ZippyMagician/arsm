@@ -20,15 +20,13 @@ lazy_static! {
         let mut m: HashMap<String, usize> = HashMap::new();
         insert_into!(m;
             "mov" 2; "cmo" 2; "inc" 1; "cin" 1; "dec" 1;
-            "cde" 1; "out" 1; "cou" 1; "jmp" 1; "je"  1;
-            "jne" 1; "jl"  1; "jle" 1; "jg"  1; "jge" 1;
-            "jz"  2; "mul" 2; "div" 2; "add" 2; "sub" 2;
-            "cmu" 2; "cdi" 2; "cad" 2; "csu" 2; "str" 2;
-            "db"  2; "in"  0; "chr" 1; "cch" 1; "hlt" 1;
-            "chl" 1; "ret" 0; "cre" 0; "cmp" 2; "stk" 1;
-            "psh" 2; "cps" 2; "pop" 1; "cpo" 1; "ceq" 2;
-            "cg"  2; "cge" 2; "cl"  2; "cle" 2; "cne" 2;
-            "cz"  1
+            "cde" 1; "out" 1; "cou" 1; "jmp" 1; "cjm" 1;
+            "mul" 2; "div" 2; "add" 2; "sub" 2; "cmu" 2; 
+            "cdi" 2; "cad" 2; "csu" 2; "str" 2; "db"  2; 
+            "in"  0; "chr" 1; "cch" 1; "hlt" 1; "chl" 1; 
+            "ret" 0; "cre" 0; "cmp" 2; "stk" 1; "psh" 2; 
+            "cps" 2; "pop" 1; "cpo" 1; "ceq" 2; "cg"  2; 
+            "cge" 2; "cl"  2; "cle" 2; "cne" 2; "cz"  1
         );
         m
     };

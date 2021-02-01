@@ -2,7 +2,8 @@ stk 50
 
 .takeinp
     mov eh in
-    jz eh :outinp
+    cz eh
+    cjm :outinp
     psh 1 eh
     inc ax
     jmp :takeinp
@@ -10,6 +11,7 @@ stk 50
     pop bl
     dec ax
     chr bl
-    jz ax :end
+    cz ax
+    cjm :end
     jmp :outinp
 ..end
