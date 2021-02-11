@@ -1,0 +1,106 @@
+= Documentation =
+
+What follows is the documentation and general structure of the arsm programming language. This is an all-encompassing, explanatory guide that will always be up to date.
+
+== General Structure ==
+
+=== Labels ===
+
+Labels are used when you want to pass a branch as an argument. They are defined as:
+
+<pre>:name</pre>
+=== Branches ===
+
+Branches can be jumped to by certain commands. They are defined as follows:
+
+<pre>.name
+    ...
+.</pre>
+A branch will be executed on the programs first run-through. For example:
+
+<pre>.main
+    mov eax 13
+    out eax</pre>
+Will print 13, even though no specific call to <code>.main</code> was made
+
+=== Memory ===
+
+[[File:https://raw.githubusercontent.com/ZippyMagician/arsm/master/etc/arsm_memory.png|The memory layout]]
+
+==== Registry ====
+
+There are 5 16-bit registries: ''a'', ''b'', ''c'', ''d'', and ''e''. To call a single registry, attach an ''x'' onto the end. To join two registries together (making 32-bits of data), simply put two separate registry names before the ''x''. To only access half of the 16-bit registries, use ''h'' or ''l'' (upper or lower respectively).
+
+==== Cells ====
+
+Memory is accessed by placing some expression that evaluates down to a number inside <code>[]</code>. Memory is seperated into 8-bit cells, which similar to the registry can be joined together. To accomplish this, you prefix the <code>[]</code> with an identifier. ''#'' marks a single cell (8-bits), ''$'' marks two cells (16-bits), and ''@'' marks four cells (32-bits).
+
+=== Characters ===
+
+A character literal is denoted by a <code>'</code> followed by any ascii character. This will yield the integer value of that character, for use in the program.
+
+== Commands ==
+
+* <code>mov &lt;A&gt; &lt;B&gt;</code> -&gt; Move B into A
+* <code>inc &lt;A&gt;</code> -&gt; Increment A
+* <code>dec &lt;A&gt;</code> -&gt; Decrement A
+* <code>out &lt;A&gt;</code> -&gt; Print A with no newline
+* <code>jmp &lt;A&gt;</code> -&gt; Goto the branch entitled A (note: A is a '''label''', not a '''branch''')
+* <code>mul &lt;A&gt; &lt;B&gt;</code> -&gt; Multiply A by B, store in A
+* <code>div &lt;A&gt; &lt;B&gt;</code> -&gt; Divide A by B, store in A
+* <code>add &lt;A&gt; &lt;B&gt;</code> -&gt; Add A and B, store in A
+* <code>sub &lt;A&gt; &lt;B&gt;</code> -&gt; Subtract B from A, store in A
+* <code>lsh &lt;A&gt; &lt;B&gt;</code> -&gt; A &lt;&lt; B, store in A
+* <code>rsh &lt;A&gt; &lt;B&gt;</code> -&gt; A &gt;&gt; B, store in A
+* <code>or &lt;A&gt; &lt;B&gt;</code> -&gt; A | B, store in A
+* <code>xor &lt;A&gt; &lt;B&gt;</code> -&gt; A ^ B, store in A
+* <code>and &lt;A&gt; &lt;B&gt;</code> -&gt; A &amp; B, store in A
+* <code>not &lt;A&gt;</code> -&gt; ~A
+* <code>str &lt;A&gt; &lt;B&gt;</code> -&gt; Place string A in memory, with final character B
+* <code>db &lt;A&gt; &lt;B&gt;</code> -&gt; Get length of data, starting at point A in memory and ending when the point in memory equals B
+* <code>in</code> -&gt; Get next byte of STDIN or a null-byte (<code>0</code>) if none left
+* <code>chr &lt;A&gt;</code> -&gt; Print A as a character instead of number
+* <code>hlt &lt;A&gt;</code> -&gt; Terminates program with exit code A
+* <code>ret</code> -&gt; Return to the point at which this jump was called from
+* <code>stk &lt;A&gt;</code> -&gt; Resizes stack to size A. Defaults to 0
+* <code>psh &lt;A&gt; &lt;B&gt;</code> -&gt; Pushes A byte number B to stack
+* <code>pop &lt;A&gt;</code> -&gt; Pops N bytes (enough to fill A) and move to A.
+* <code>ceq &lt;A&gt; &lt;B&gt;</code> -&gt; Sets conditional flag if A == B
+* <code>cz &lt;A&gt;</code> -&gt; Sets conditional flag if A is 0
+* <code>cne &lt;A&gt; &lt;B&gt;</code> -&gt; Sets conditional flag if A != B
+* <code>cg &lt;A&gt; &lt;B&gt;</code> -&gt; Sets conditional flag if A &gt; B
+* <code>cge &lt;A&gt; &lt;B&gt;</code> -&gt; Sets conditional flag if A &gt;= B
+* <code>cl &lt;A&gt; &lt;B&gt;</code> -&gt; Sets conditional flag if A &lt; B
+* <code>cle &lt;A&gt; &lt;B&gt;</code> -&gt; Sets conditional flag if A &lt;= B
+
+Additionally, there are conditional versions of the following: jmp, mov, inc, dec, out, mul, div, add, sub, lsh, rsh, or, and, xor, not, chr, hlt, ret, psh, pop (remove the last letter, put a <code>c</code> in the front)
+
+== Inline Python ==
+
+Inline Python supports a few custom functions + variables to manipulate and make use of
+
+{| class="wikitable"
+! Name
+! Type
+! Description
+|-
+| <code>fromBytes</code>
+| func
+| Converts list $1 <code>u8</code> bytes to single, signed integer. Useful for joining sections of the stack
+|-
+| <code>stk</code>
+| var
+| The current stack stored in memory. Can be modified. WARNING: EXCEEDING THE BOUNDS OF THE STACK '''WILL NOT''' ERROR, AND MAY LEAD TO SOME DATA BEING LOST
+|-
+| <code>popN</code>
+| func
+| Pops the top $2 items from the list $1
+|}
+
+In addition, you can access any register (for example <code>eax</code>) by prefixing it with an <code>@</code>. For instance:
+
+<pre>mov ex 14
+mov ah 56
+
+ceq { @ex + @ah } 70
+chl 1</pre>

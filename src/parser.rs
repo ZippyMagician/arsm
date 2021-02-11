@@ -1,8 +1,7 @@
 use clap::ArgMatches;
 
-use crate::bx;
-use crate::env::Environment;
 use crate::utils::{token::Op, traits::*};
+use crate::{bx, env::Environment};
 
 pub fn parse(ast: &[Op], matches: &ArgMatches<'_>) {
     let mut v = if matches.is_present("file") {

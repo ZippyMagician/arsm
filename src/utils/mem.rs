@@ -1,10 +1,8 @@
 // There are some unused functions that will be used eventually
 #![allow(dead_code)]
 
-use std::{
-    alloc::{alloc_zeroed, Layout},
-    ops::Range,
-};
+use std::alloc::{alloc_zeroed, Layout};
+use std::ops::Range;
 use std::{fmt, ptr};
 
 use super::consts::{OFFSET, REGISTRY_OFFSET, U8_ALIGN};

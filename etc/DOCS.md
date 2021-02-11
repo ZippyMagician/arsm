@@ -25,7 +25,7 @@ Will print 13, even though no specific call to `.main` was made
 ![The memory layout](https://raw.githubusercontent.com/ZippyMagician/arsm/master/etc/arsm_memory.png)
 #### Registry
 There are 5 16-bit registries: *a*, *b*, *c*, *d*, and *e*. To call a single registry, attach an *x* onto the end. To join two registries together (making 32-bits of data), simply put two separate registry names before the *x*. To only access half of the 16-bit registries, use *h* or *l* (upper or lower respectively).
-#### Ram
+#### Cells
 Memory is accessed by placing some expression that evaluates down to a number inside `[]`. Memory is seperated into 8-bit cells, which similar to the registry can be joined together. To accomplish this, you prefix the `[]` with an identifier. *#* marks a single cell (8-bits), *$* marks two cells (16-bits), and *@* marks four cells (32-bits).
 ### Characters
 A character literal is denoted by a `'` followed by any ascii character. This will yield the integer value of that character, for use in the program.
@@ -66,8 +66,9 @@ Additionally, there are conditional versions of the following:
 jmp, mov, inc, dec, out, mul, div, add, sub, lsh, rsh, or, and, xor, not, chr, hlt, ret, psh, pop (remove the last letter, put a `c` in the front)
 ## Inline Python
 Inline Python supports a few custom functions + variables to manipulate and make use of
+
 | Name | Type | Description |
-| :--: | :--: | :---------: |
+| ---- | ---- | ----------- |
 | `fromBytes` | func | Converts list $1 `u8` bytes to single, signed integer. Useful for joining sections of the stack |
 | `stk` | var | The current stack stored in memory. Can be modified. WARNING: EXCEEDING THE BOUNDS OF THE STACK **WILL NOT** ERROR, AND MAY LEAD TO SOME DATA BEING LOST |
 | `popN` | func | Pops the top $2 items from the list $1 |
