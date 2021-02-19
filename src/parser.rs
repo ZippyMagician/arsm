@@ -231,7 +231,7 @@ fn modify_memory(env: &mut Environment, ast: &[Op], obj: &Op, val: &Op) {
     }
 }
 
-#[inline]
+#[inline(always)]
 fn set_ind(ind: &mut usize, env: &mut Environment, val: usize) {
     *ind = val;
     env.jump_point.push(env.pos);
@@ -477,12 +477,13 @@ fn run_cmd(
             }
 
             if !env.jump_point.is_empty() {
-                let (left, right) = env.jump_point.pop().unwrap();
+                let (mut left, right) = env.jump_point.pop().unwrap();
                 // If it a top-level call, return to the next bit of the top-level. Otherwise, return to the next bit of the branch
                 if let Op::Branch(..) = env.get_parent().as_ref().unwrap()[left] {
                     env.pos = (left, right + 1);
                 } else {
-                    env.pos = (left + 1, right);
+                    left += 1;
+                    env.pos = (left, right);
                 }
                 *ind = left;
             } else {

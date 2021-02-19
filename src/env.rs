@@ -26,7 +26,7 @@ impl Environment {
             mem: Memory::init(1024, 0),
             stdin: BufIter::new(buf),
             parent_ast: None,
-            jump_point: Vec::new(),
+            jump_point: Vec::with_capacity(5),
             pos: (0, 0),
             #[cfg(feature = "inline-python")]
             py: PyGuard::new(),
@@ -42,13 +42,13 @@ impl Environment {
     }
 
     // Only used by inline-python
-    #[allow(dead_code)]
+    #[cfg(feature = "inline-python")]
     pub fn shallow_copy(&self) -> Self {
         Self {
             mem: self.mem,
             stdin: BufIter::new(&mut []),
             parent_ast: None,
-            jump_point: Vec::new(),
+            jump_point: Vec::with_capacity(5),
             pos: (0, 0),
             #[cfg(feature = "inline-python")]
             py: PyGuard::new(),
