@@ -29,7 +29,7 @@ lazy_static! {
             "cge" 2; "cl"  2; "cle" 2; "cne" 2; "cz"  1;
             "rsh" 2; "crs" 2; "lsh" 2; "cls" 2; "or"  2;
             "cor" 2; "xor" 2; "cxo" 2; "and" 2; "can" 2;
-            "not" 1; "cno" 1
+            "not" 1; "cno" 1; "swp" 2; "csw" 2
         );
         m
     };

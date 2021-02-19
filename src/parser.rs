@@ -455,6 +455,17 @@ fn run_cmd(
             bx!(false)
         }
 
+        "swp" | "csw" => {
+            if cmd.starts_with('c') && !env.mem.flag_read_cmp() {
+                return bx!(false);
+            }
+
+            let val = args[1];
+            modify_memory(env, ast, args[1], args[0]);
+            modify_memory(env, ast, args[0], val);
+            bx!(false)
+        }
+
         "db" => {
             let mut i = to_numeric(env, ast, args[0]);
             let terminator: u8 = to_numeric(env, ast, args[1]);

@@ -54,6 +54,7 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `stk <A>` -> Resizes stack to size A. Defaults to 0
 * `psh <A> <B>` -> Pushes A byte number B to stack
 * `pop <A>` -> Pops N bytes (enough to fill A) and move to A.
+* `swp <A> <B>` -> Swaps A and B's values
 * `ceq <A> <B>` -> Sets conditional flag if A == B
 * `cz <A>` -> Sets conditional flag if A is 0
 * `cne <A> <B>` -> Sets conditional flag if A != B
@@ -63,7 +64,7 @@ A character literal is denoted by a `'` followed by any ascii character. This wi
 * `cle <A> <B>` -> Sets conditional flag if A <= B
 
 Additionally, there are conditional versions of the following:
-jmp, mov, inc, dec, out, mul, div, add, sub, lsh, rsh, or, and, xor, not, chr, hlt, ret, psh, pop (remove the last letter, put a `c` in the front)
+jmp, mov, inc, dec, out, mul, div, add, sub, lsh, rsh, or, and, xor, not, chr, hlt, ret, psh, pop, swp (remove the last letter, put a `c` in the front)
 ## Inline Python
 Inline Python supports a few custom functions + variables to manipulate and make use of
 
