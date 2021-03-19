@@ -30,7 +30,6 @@ name = "arsm"
 [dependencies]
 clap = "2.33.3"
 lazy_static = "1.4.0"
-num-traits = "0.2"
 
 pyo3 = { version = "0.13.1", features = ["auto-initialize", "extension-module"], optional = true }
 regex = { version = "1.4.3", optional = true }

@@ -1,5 +1,6 @@
 use clap::ArgMatches;
 
+use crate::utils::Num;
 use crate::utils::{token::Op, traits::*};
 use crate::{bx, env::Environment};
 
@@ -78,40 +79,44 @@ fn run_op(env: &mut Environment, ast: &[Op], ind: &mut usize) -> Box<dyn Status>
     }
 }
 
-// Converts op to a numeric value
-pub fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -> T {
+// Incorrect casts will not error, instead running with undefined behaviour
+// S is technically only necessary if reading from the stack, however it is unfortunately impossible to tell the compiler that
+pub fn to_numeric<S: Size>(env: &mut Environment, ast: &[Op], obj: &Op) -> Num {
     match obj {
-        Op::Numeric(val) => num_traits::cast(*val),
+        Op::Numeric(val) => Num { i32: *val },
 
         Op::StackMarker => {
-            match T::len() {
-                1 => num_traits::cast(
-                    env.mem
+            match S::len() {
+                1 => Num {
+                    u8: env
+                        .mem
                         .s_pop_8()
                         .expect("Attempted to pop from empty stack"),
-                ),
-                2 => num_traits::cast(
-                    env.mem
+                },
+                2 => Num {
+                    i16: env
+                        .mem
                         .s_pop_16()
                         .expect("Attempted to pop from empty stack"),
-                ),
-                4 | 8 => num_traits::cast(
-                    env.mem
+                },
+                4 | 8 => Num {
+                    i32: env
+                        .mem
                         .s_pop_32()
                         .expect("Attempted to pop from empty stack"),
-                ),
+                },
                 // Can't happen
                 _ => panic!(),
             }
         }
 
         Op::Memory(ident, op) => {
-            let val = to_numeric(env, ast, &op);
+            let val = unsafe { to_numeric::<usize>(env, ast, &op).usize };
 
             match ident {
-                '#' => num_traits::cast(env.mem.m_read::<u8>(val)),
-                '$' => num_traits::cast(env.mem.m_read::<i16>(val)),
-                '@' => num_traits::cast(env.mem.m_read::<i32>(val)),
+                '#' => env.mem.m_read::<u8>(val),
+                '$' => env.mem.m_read::<i16>(val),
+                '@' => env.mem.m_read::<i32>(val),
                 _ => panic!("Invalid memory identifier: '{}'", ident),
             }
         }
@@ -120,19 +125,20 @@ pub fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -
             let chrs: Vec<char> = name.chars().collect();
             if name.ends_with('x') {
                 if name.len() == 3 {
-                    num_traits::cast(env.mem.r_read::<i32>(&(chrs[0], chrs[1])))
+                    env.mem.r_read(&(chrs[0], chrs[1]))
                 } else {
-                    num_traits::cast(env.mem.r_read::<i16>(&chrs[0]))
+                    env.mem.r_read(&chrs[0])
                 }
             } else if name.ends_with('h') {
-                num_traits::cast(env.mem.r_read::<u8>(&(chrs[0], Pos::Upper)))
+                env.mem.r_read(&(chrs[0], Pos::Upper))
             } else {
-                num_traits::cast(env.mem.r_read::<u8>(&(chrs[0], Pos::Lower)))
+                env.mem.r_read(&(chrs[0], Pos::Lower))
             }
         }
 
-        Op::Label(name) => num_traits::cast(
-            env.get_parent()
+        Op::Label(name) => Num {
+            usize: env
+                .get_parent()
                 .clone()
                 .unwrap_or_else(|| ast.to_owned())
                 .iter()
@@ -144,16 +150,18 @@ pub fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -
                     }
                 })
                 .unwrap_or_else(|| panic!("No matching branch for label {}", name)),
-        ),
+        },
 
         Op::BinOp(..) => todo!("Math unimplemented"),
 
-        Op::Char(chr) => num_traits::cast(*chr as u8),
+        Op::Char(chr) => Num { u8: *chr as u8 },
 
         Op::Cmd(name, args) => {
             let mut dummy_ind = 0;
             let args: Vec<&Op> = args.iter().collect();
-            num_traits::cast(run_cmd(env, ast, &mut dummy_ind, &*name, &args).get_val())
+            Num {
+                i32: run_cmd(env, ast, &mut dummy_ind, &*name, &args).get_val(),
+            }
         }
 
         #[cfg(feature = "inline-python")]
@@ -168,18 +176,12 @@ pub fn to_numeric<T: Num + Clone>(env: &mut Environment, ast: &[Op], obj: &Op) -
                 env.mem.s_len = new_stk.len();
                 env.mem.s_size = env.mem.s_len.max(env.mem.s_size);
             }
-            num_traits::cast(res)
+
+            Num { i32: res }
         }
 
         _ => panic!("Invalid numeric literal: {:?}", obj),
     }
-    .unwrap_or_else(|| {
-        panic!(
-            "Could not convert {:?} to type <{}>",
-            obj,
-            std::any::type_name::<T>()
-        )
-    })
 }
 
 // Pass in the op in which memory is modified, and it will automatically update
@@ -190,37 +192,37 @@ fn modify_memory(env: &mut Environment, ast: &[Op], obj: &Op, val: &Op) {
             let chrs = name.chars().collect::<Vec<char>>();
             if name.ends_with('x') {
                 if chrs.len() == 3 {
-                    let val: i32 = to_numeric(env, &ast, val);
+                    let val = to_numeric::<i32>(env, &ast, val);
                     env.mem.r_write(&(chrs[0], chrs[1]), &val);
                 } else {
-                    let val: i16 = to_numeric(env, &ast, val);
+                    let val = to_numeric::<i16>(env, &ast, val);
                     env.mem.r_write(&chrs[0], &val);
                 }
             } else if name.ends_with('h') {
-                let val: u8 = to_numeric(env, &ast, val);
+                let val = to_numeric::<u8>(env, &ast, val);
                 env.mem.r_write(&(chrs[0], Pos::Upper), &val);
             } else {
-                let val: u8 = to_numeric(env, &ast, val);
+                let val = to_numeric::<u8>(env, &ast, val);
                 env.mem.r_write(&(chrs[0], Pos::Lower), &val);
             }
         }
 
         Op::Memory(ident, op) => {
-            let pos = to_numeric(env, &ast, &op);
+            let pos = unsafe { to_numeric::<usize>(env, &ast, &op).usize };
             match ident {
                 '#' => {
-                    let val: u8 = to_numeric(env, &ast, val);
-                    env.mem.m_write(pos, &val);
+                    let val = to_numeric::<u8>(env, &ast, val);
+                    env.mem.m_write::<u8>(pos, &val);
                 }
 
                 '$' => {
-                    let val: i16 = to_numeric(env, &ast, val);
-                    env.mem.m_write(pos, &val);
+                    let val = to_numeric::<i16>(env, &ast, val);
+                    env.mem.m_write::<i16>(pos, &val);
                 }
 
                 '@' => {
-                    let val: i32 = to_numeric(env, &ast, val);
-                    env.mem.m_write(pos, &val);
+                    let val = to_numeric::<i32>(env, &ast, val);
+                    env.mem.m_write::<i32>(pos, &val);
                 }
 
                 _ => panic!("Invalid identifier for memory: '{}'", ident),
@@ -243,10 +245,10 @@ pub fn check_cmp<T>(env: &mut Environment, ast: &[Op], args: &[&Op], f: T) -> Bo
 where
     T: FnOnce(i32, i32) -> bool,
 {
-    let left: i32 = to_numeric(env, ast, args[0]);
-    let right = to_numeric(env, ast, args[1]);
+    let left = to_numeric::<i32>(env, ast, args[0]);
+    let right = to_numeric::<i32>(env, ast, args[1]);
 
-    if f(left, right) {
+    if unsafe { f(left.i32, right.i32) } {
         env.mem.flag_write_cmp();
     } else {
         env.mem.flag_reset_cmp();
@@ -270,9 +272,14 @@ where
         return bx!(false);
     }
 
-    let left: i32 = to_numeric(env, ast, args[0]);
-    let right: i32 = to_numeric(env, ast, args[1]);
-    modify_memory(env, ast, args[0], &Op::Numeric(f(left, right)));
+    let left = to_numeric::<i32>(env, ast, args[0]);
+    let right = to_numeric::<i32>(env, ast, args[1]);
+    modify_memory(
+        env,
+        ast,
+        args[0],
+        &Op::Numeric(unsafe { f(left.i32, right.i32) }),
+    );
     bx!(false)
 }
 
@@ -301,7 +308,7 @@ fn run_cmd(
             }
 
             // new_val is 1 more than the previous value
-            let new_val = Op::Numeric(1 + to_numeric::<i32>(env, ast, args[0]));
+            let new_val = Op::Numeric(1 + unsafe { to_numeric::<i32>(env, ast, args[0]).i32 });
             modify_memory(env, ast, args[0], &new_val);
             bx!(false)
         }
@@ -312,7 +319,7 @@ fn run_cmd(
             }
 
             // new_val is 1 less than the previous value
-            let new_val = Op::Numeric(to_numeric::<i32>(env, ast, args[0]) - 1);
+            let new_val = Op::Numeric(unsafe { to_numeric::<i32>(env, ast, args[0]).i32 } - 1);
             modify_memory(env, ast, args[0], &new_val);
             bx!(false)
         }
@@ -331,7 +338,8 @@ fn run_cmd(
                 return bx!(false);
             }
 
-            print!("{}", to_numeric::<u8>(env, ast, args[0]) as char);
+            print!("{}", unsafe { to_numeric::<u8>(env, ast, args[0]).u8 }
+                as char);
             bx!(false)
         }
 
@@ -340,7 +348,7 @@ fn run_cmd(
                 return bx!(false);
             }
 
-            let n = to_numeric(env, ast, args[0]);
+            let n = unsafe { to_numeric::<usize>(env, ast, args[0]).usize };
             set_ind(ind, env, n);
             bx!(true)
         }
@@ -366,7 +374,7 @@ fn run_cmd(
         "cge" => check_cmp(env, ast, args, |l, r| l >= r),
 
         "cz" => {
-            if to_numeric::<i32>(env, ast, args[0]) == 0 {
+            if unsafe { to_numeric::<i32>(env, ast, args[0]).i32 } == 0 {
                 env.mem.flag_write_cmp();
             } else {
                 env.mem.flag_reset_cmp();
@@ -378,11 +386,11 @@ fn run_cmd(
         "str" => match args[0] {
             Op::String(val) => {
                 for (i, chr) in val.chars().enumerate() {
-                    env.mem.m_write(i, &(chr as u8));
+                    env.mem.m_write::<u8>(i, &Num { u8: chr as u8 });
                 }
 
-                let terminator: u8 = to_numeric(env, ast, args[1]);
-                env.mem.m_write(val.len(), &terminator);
+                let terminator = to_numeric::<u8>(env, ast, args[1]);
+                env.mem.m_write::<u8>(val.len(), &terminator);
                 bx!(false)
             }
 
@@ -393,7 +401,7 @@ fn run_cmd(
         },
 
         "stk" => {
-            let count = to_numeric(env, ast, args[0]);
+            let count = unsafe { to_numeric::<usize>(env, ast, args[0]).usize };
             env.mem.resize_stack(count);
             bx!(false)
         }
@@ -403,20 +411,20 @@ fn run_cmd(
                 return bx!(false);
             }
 
-            let allocation = to_numeric(env, ast, args[0]);
+            let allocation = unsafe { to_numeric::<usize>(env, ast, args[0]).usize };
             match allocation {
                 1 => {
-                    let n = to_numeric(env, ast, args[1]);
+                    let n = to_numeric::<u8>(env, ast, args[1]);
                     env.mem.s_push::<u8>(&n)
                 }
 
                 2 => {
-                    let n = to_numeric(env, ast, args[1]);
+                    let n = to_numeric::<i16>(env, ast, args[1]);
                     env.mem.s_push::<i16>(&n)
                 }
 
                 4 => {
-                    let n = to_numeric(env, ast, args[1]);
+                    let n = to_numeric::<i32>(env, ast, args[1]);
                     env.mem.s_push::<i32>(&n)
                 }
                 // Shouldn't happen
@@ -450,7 +458,7 @@ fn run_cmd(
                 return bx!(false);
             }
 
-            let val: i32 = to_numeric(env, ast, args[0]);
+            let val = unsafe { to_numeric::<i32>(env, ast, args[0]).i32 };
             modify_memory(env, ast, args[0], &Op::Numeric(!val));
             bx!(false)
         }
@@ -467,10 +475,10 @@ fn run_cmd(
         }
 
         "db" => {
-            let mut i = to_numeric(env, ast, args[0]);
-            let terminator: u8 = to_numeric(env, ast, args[1]);
+            let mut i = unsafe { to_numeric::<usize>(env, ast, args[0]).usize };
+            let terminator = unsafe { to_numeric::<u8>(env, ast, args[1]).u8 };
             let mut len = 0;
-            while env.mem.m_read::<u8>(i) != terminator {
+            while unsafe { env.mem.m_read::<u8>(i).u8 } != terminator {
                 len += 1;
                 i += 1;
             }
@@ -509,7 +517,7 @@ fn run_cmd(
                 return bx!(false);
             }
 
-            std::process::exit(to_numeric(env, ast, args[0]))
+            std::process::exit(unsafe { to_numeric::<i32>(env, ast, args[0]).i32 })
         }
 
         _ => panic!("Command: {} unrecognized", cmd),

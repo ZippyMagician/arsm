@@ -7,6 +7,7 @@ use std::{fmt, ptr};
 
 use super::consts::{OFFSET, REGISTRY_OFFSET, U8_ALIGN};
 use super::traits::*;
+use super::Num;
 
 #[derive(PartialEq, Clone, Copy)]
 pub struct Memory {
@@ -113,23 +114,25 @@ impl Memory {
 
 // REGISTRY
 impl Memory {
-    pub fn r_write<N: Num, P: Position>(&mut self, keys: &P, element: &N) {
-        let bytes = element.get_bytes();
+    pub fn r_write<P: Position>(&mut self, keys: &P, element: &Num) {
         match keys.indexes() {
             (Some(a), None, None) => {
+                let bytes = unsafe { element.i16 }.to_ne_bytes();
                 self.write(a, bytes[0]);
                 self.write(a + 1, bytes[1]);
             }
 
             (Some(a), None, Some(side)) => {
+                let byte = unsafe { element.u8 };
                 if Pos::Upper == side {
-                    self.write(a + 1, bytes[0]);
+                    self.write(a + 1, byte);
                 } else {
-                    self.write(a, bytes[0]);
+                    self.write(a, byte);
                 }
             }
 
             (Some(a), Some(b), None) => {
+                let bytes = unsafe { element.i32 }.to_ne_bytes();
                 self.write(a, bytes[0]);
                 self.write(a + 1, bytes[1]);
                 self.write(b, bytes[2]);
@@ -140,22 +143,28 @@ impl Memory {
         }
     }
 
-    pub fn r_read<N: Num>(&self, keys: &dyn Position) -> N {
+    pub fn r_read(&self, keys: &dyn Position) -> Num {
         match keys.indexes() {
-            (Some(a), None, None) => N::from_bytes(&[self.read(a), self.read(a + 1)]),
+            (Some(a), None, None) => Num {
+                i16: i16::from_ne_bytes([self.read(a), self.read(a + 1)]),
+            },
 
-            (Some(a), None, Some(side)) => N::from_bytes(&[if Pos::Upper == side {
-                self.read(a + 1)
-            } else {
-                self.read(a)
-            }]),
+            (Some(a), None, Some(side)) => Num {
+                u8: if Pos::Upper == side {
+                    self.read(a + 1)
+                } else {
+                    self.read(a)
+                },
+            },
 
-            (Some(a), Some(b), None) => N::from_bytes(&[
-                self.read(a),
-                self.read(a + 1),
-                self.read(b),
-                self.read(b + 1),
-            ]),
+            (Some(a), Some(b), None) => Num {
+                i32: i32::from_ne_bytes([
+                    self.read(a),
+                    self.read(a + 1),
+                    self.read(b),
+                    self.read(b + 1),
+                ]),
+            },
 
             _ => panic!("Something went wrong"),
         }
@@ -164,11 +173,19 @@ impl Memory {
 
 // STACK
 impl Memory {
-    pub fn s_push<N: Num>(&mut self, element: &N) {
-        let bytes = element.get_bytes();
-        for byte in &bytes {
+    pub fn s_push<S: Size>(&mut self, element: &Num) {
+        let bytes: Box<[u8]> = unsafe {
+            match S::len() {
+                1 => Box::new([element.u8]),
+                2 => Box::new(element.i16.to_ne_bytes()),
+                4 => Box::new(element.i32.to_ne_bytes()),
+                _ => panic!(),
+            }
+        };
+
+        for byte in bytes.as_ref() {
             if self.s_len == self.s_size {
-                panic!("s is full. Cannot fit size {} element.", bytes.len());
+                panic!("stack is full. Cannot fit size {} element.", bytes.len());
             } else {
                 self.write(OFFSET + self.s_len, *byte);
                 self.s_len += 1;
@@ -230,9 +247,17 @@ impl Memory {
 
 // MEMORY
 impl Memory {
-    pub fn m_write<N: Num>(&mut self, pos: usize, val: &N) {
+    pub fn m_write<S: Size>(&mut self, pos: usize, val: &Num) {
         let start = OFFSET + self.s_size;
-        let bytes = val.get_bytes();
+        let bytes: Box<[u8]> = unsafe {
+            match S::len() {
+                1 => Box::new([val.u8]),
+                2 => Box::new(val.i16.to_ne_bytes()),
+                4 => Box::new(val.i32.to_ne_bytes()),
+                _ => panic!(),
+            }
+        };
+
         for (i, byte) in bytes.iter().enumerate() {
             if start + pos + i >= self.size {
                 panic!(
@@ -247,20 +272,26 @@ impl Memory {
         }
     }
 
-    pub fn m_read<N: Num>(&self, pos: usize) -> N {
+    pub fn m_read<S: Size>(&self, pos: usize) -> Num {
         let start = OFFSET + self.s_size;
 
-        match N::len() {
-            1 => N::from_bytes(&[self.read(start + pos)]),
+        match S::len() {
+            1 => Num {
+                u8: self.read(start + pos),
+            },
 
-            2 => N::from_bytes(&[self.read(start + pos), self.read(start + pos + 1)]),
+            2 => Num {
+                i16: i16::from_ne_bytes([self.read(start + pos), self.read(start + pos + 1)]),
+            },
 
-            4 => N::from_bytes(&[
-                self.read(start + pos),
-                self.read(start + pos + 1),
-                self.read(start + pos + 2),
-                self.read(start + pos + 3),
-            ]),
+            4 => Num {
+                i32: i32::from_ne_bytes([
+                    self.read(start + pos),
+                    self.read(start + pos + 1),
+                    self.read(start + pos + 2),
+                    self.read(start + pos + 3),
+                ]),
+            },
 
             _ => panic!("Something went wrong"),
         }
@@ -287,14 +318,14 @@ mod mem_tests {
     #[test]
     fn test_stack() {
         let mut env = Memory::init(1024, 5);
-        env.s_push(&13_u8);
-        env.s_push(&128935_i32);
+        env.s_push::<u8>(&Num { i32: 13 });
+        env.s_push::<i32>(&Num { i32: 128935 });
 
         assert_eq!(env.s_pop_32(), Some(128935));
 
-        env.s_push(&345_i16);
-        env.s_push(&68_u8);
-        env.s_push(&31_u8);
+        env.s_push::<i16>(&Num { i32: 345 });
+        env.s_push::<u8>(&Num { i32: 68 });
+        env.s_push::<u8>(&Num { i32: 31 });
 
         assert_eq!(env.s_pop_8(), Some(31));
         assert_eq!(env.s_pop_8(), Some(68));
@@ -305,36 +336,42 @@ mod mem_tests {
     #[test]
     fn test_registry() {
         let mut env = Memory::init(1024, 10);
-        env.r_write(&'e', &276_i16);
-        env.r_write(&('a', 'b'), &128935_i32);
-        env.r_write(&('c', Pos::Upper), &7_u8);
+        env.r_write(&'e', &Num { i32: 276 });
+        env.r_write(&('a', 'b'), &Num { i32: 128935 });
+        env.r_write(&('c', Pos::Upper), &Num { i32: 7 });
 
-        assert_eq!(env.r_read::<i32>(&('a', 'b')), 128935);
-        assert_eq!(env.r_read::<u8>(&('c', Pos::Upper)), 7);
-        assert_eq!(env.r_read::<i16>(&'e'), 276);
+        unsafe {
+            assert_eq!(env.r_read(&('a', 'b')).i32, 128935);
+            assert_eq!(env.r_read(&('c', Pos::Upper)).u8, 7);
+            assert_eq!(env.r_read(&'e').i16, 276);
+        }
     }
 
     #[test]
     fn test_memory() {
         let mut env = Memory::init(1024, 0);
-        env.m_write(0, &15_u8);
-        env.m_write(5, &1056_i16);
-        env.m_write(3, &18_u8);
-        env.m_write(100, &-65412_i32);
+        env.m_write::<u8>(0, &Num { i32: 15 });
+        env.m_write::<i16>(5, &Num { i32: 1056 });
+        env.m_write::<u8>(3, &Num { i32: 18 });
+        env.m_write::<i32>(100, &Num { i32: -65412 });
 
-        assert_eq!(env.m_read::<i16>(5), 1056);
-        assert_eq!(env.m_read::<i32>(100), -65412);
-        assert_eq!(env.m_read::<u8>(0), 15);
-        assert_eq!(env.m_read::<u8>(3), 18);
+        unsafe {
+            assert_eq!(env.m_read::<i16>(5).i16, 1056);
+            assert_eq!(env.m_read::<i32>(100).i32, -65412);
+            assert_eq!(env.m_read::<u8>(0).u8, 15);
+            assert_eq!(env.m_read::<u8>(3).u8, 18);
+        }
     }
 
     #[test]
     fn test_together() {
         let mut env = Memory::init(1024, 5);
-        env.s_push(&13_u8);
-        env.r_write(&'e', &1342_i16);
+        env.s_push::<u8>(&Num { i32: 13 });
+        env.r_write(&'e', &Num { i32: 1342 });
         assert_eq!(env.s_pop_8(), Some(13));
-        assert_eq!(env.r_read::<i16>(&'e'), 1342);
+        unsafe {
+            assert_eq!(env.r_read(&'e').i16, 1342);
+        }
     }
 
     #[test]

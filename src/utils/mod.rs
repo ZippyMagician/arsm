@@ -4,6 +4,25 @@ pub mod mem;
 pub mod token;
 pub mod traits;
 
+use std::fmt;
+
+#[repr(align(16))]
+#[derive(Clone, Copy)]
+/// 16-bit union that can be a variety of different numeric types
+pub union Num {
+    pub i16: i16,
+    pub i32: i32,
+    pub i64: i64,
+    pub u8: u8,
+    pub usize: usize,
+}
+
+impl fmt::Display for Num {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", unsafe { self.i32 }.to_string())
+    }
+}
+
 #[cfg(feature = "inline-python")]
 use {
     crate::utils::{consts::REGISTER_REGEX, token::Op},
@@ -46,11 +65,14 @@ impl PyGuard {
             // We can pass an empty slice for the AST as we know this will always be simply a register
             code = REGISTER_REGEX
                 .replace_all(&code, |caps: &regex::Captures<'_>| {
-                    crate::parser::to_numeric::<i32>(
-                        &mut env.shallow_copy(),
-                        &[],
-                        &Op::Register(format!("{}", &caps[1])),
-                    )
+                    unsafe {
+                        crate::parser::to_numeric::<i32>(
+                            &mut env.shallow_copy(),
+                            &[],
+                            &Op::Register(format!("{}", &caps[1])),
+                        )
+                        .i32
+                    }
                     .to_string()
                 })
                 .to_string();
