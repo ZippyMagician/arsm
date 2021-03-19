@@ -1,4 +1,4 @@
-stk 50
+stk 100
 
 .takeinp
     mov eh in
